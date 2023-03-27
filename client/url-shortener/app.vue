@@ -4,8 +4,15 @@
   </div>
 </template>
 <style lang="scss">
-* {
+html,
+body {
+  margin: 0;
+  height: 100%;
+  width: 100%;
+  overflow: hidden
+}
 
+* {
   &::-webkit-scrollbar {
     width: 4px;
     height: 8px;

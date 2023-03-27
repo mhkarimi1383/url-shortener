@@ -3,7 +3,6 @@ export default defineNuxtConfig({
   modules: [
     '@vuestic/nuxt'
   ],
-
   vuestic: {
     config: {
       // Vuestic config here

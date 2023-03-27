@@ -1,8 +1,11 @@
-<template>
+<template id="main-page">
     <div>
         <va-app-bar absolute hide-on-scroll target="#va-app-bar-hide">
+            <span
+                style="margin-left: 2vh; font-family: var(--va-font-family); font-weight: var(--va-button-font-weight);">URL
+                Shortener</span>
             <va-spacer />
-            <va-button style="margin-right: 1rem;" icon="logout" color="text-inverted" preset="plain">
+            <va-button style="margin-right: 2vh;" icon="logout" color="text-inverted" preset="plain">
                 Logout
             </va-button>
         </va-app-bar>
@@ -19,28 +22,57 @@
                         </va-sidebar-item-content>
                     </va-sidebar-item>
                 </va-sidebar>
-                <div style="width: 100%; display: grid;   grid-auto-rows: 15vh;">
-                    <va-form style="grid-row: 1;" tag="form" id="submition-form">
-                        <va-input v-model="value" type="url" label="url"
-                            :rules="[(v) => v.length > 0 || `This field is required`]" />
-                        <br />
-                        <va-button class="submit-button" type="submit">
-                            Submit
-                        </va-button>
-                    </va-form>
-                    <div style="grid-row: 2; grid-column: 1; top: 0; padding-left: 3vh; padding-top: 5vh; color: var(--va-text-primary) !important;"
-                        class="row">
-                        <va-input v-model="input" class="" placeholder="Filter..." />
+                <div style="width: 100%; display: grid; grid-auto-rows: 15vh;">
+                    <va-alert center style="align-self: center; grid-row: 1; grid-column: 1; margin-left: 3vh;"
+                        color="warning" outline>
+                        <template #icon>
+                            <va-icon name="star" color="warning" />
+                        </template>
+                        Let's Short LoOoOoOng Web URLs
+                    </va-alert>
+                    <va-button @click="$refs.modal.show()"
+                        style="grid-row: 2; grid-column: 1; top: 0; margin-left: 3vh; margin-right: 1vh; margin-bottom: 0; height: 5vh;"
+                        class="submit-button" type="submit">
+                        New
+                    </va-button>
+                    <va-modal no-padding style="padding-bottom: 10%;" ref="modal" stateful :message="'hi'">
+                        <template #content="{ ok, cancel }">
+                            <va-form tag="form" id="submition-form" @submit.prevent="handleSubmit">
+                                <va-card-content>
+                                    <va-input v-model="value" type="url" label="url"
+                                        :rules="[(v) => v.length > 0 || `This field is required`]" />
+                                    <!-- <br /> -->
+                                </va-card-content>
+                                <va-card-actions>
+                                    <va-button color="warning" @click="cancel">
+                                        Cancel :/
+                                    </va-button>
+                                    <va-button color="primary" class="submit-button" type="submit" @click="ok">
+                                        Ok ;)
+                                    </va-button>
+                                </va-card-actions>
+                            </va-form>
+                        </template>
+                    </va-modal>
 
-                        <div style="padding-top: 2vh;">
-                            <va-checkbox v-model="useCustomFilteringFn" label="Exact match" />
-                            <br />
-                            <va-checkbox v-model="isDebounceInput" label="Debounce input" />
-                        </div>
+                    <div style="align-items: center; display: grid; grid-row: 3; grid-column: 1; top: 0; margin-left: 3vh; margin-top: 5vh; color: var(--va-text-primary) !important;"
+                        class="row">
+                        <va-input v-model="input" style="grid-column: 1;" placeholder="Filter..." />
+
+                        <va-checkbox style="grid-column: 2; margin-left: 3vh;" v-model="useCustomFilteringFn"
+                            label="Exact match" />
+                        <va-checkbox style="grid-column: 3;" v-model="isDebounceInput" label="Debounce input" />
                     </div>
-                    <va-data-table style="grid-row: 3; grid-column: 1; top: 0;padding-left: 3vh; padding-top: 8vh;"
+                    <va-data-table virtual-scroller
+                        style="grid-row: 4; grid-column: 1; top: 0;margin-left: 3vh; margin-top: 2%; height: 40vh;"
                         :columns="columns" class="data-table" striped :items="urls" :filter="filter"
-                        :filter-method="customFilteringFn" @filtered="filteredCount = $event.items.length" />
+                        :filter-method="customFilteringFn" @filtered="filteredCount = $event.items.length">
+
+                        <template #cell(actions)="{ rowIndex }">
+                            <va-button preset="plain" icon="edit" @click="openModalToEditItemById(rowIndex)" />
+                            <va-button preset="plain" icon="delete" @click="deleteItemById(rowIndex)" />
+                        </template>
+                    </va-data-table>
                 </div>
             </main>
         </div>
@@ -62,11 +94,82 @@ export default defineComponent({
             { key: "creator" },
             { key: "updater" },
             { key: "version", sortable: true },
+            { key: "actions" },
         ];
 
         const urls = [
             {
                 id: 1,
+                upsteam_url: "https://google.com",
+                downstream_uri: "/dddddddfff",
+                created_at: null,
+                updated_at: null,
+                creator: "admin",
+                updater: "admin",
+                version: 1,
+            },
+            {
+                id: 2,
+                upsteam_url: "https://google.com",
+                downstream_uri: "/dddddddfff",
+                created_at: null,
+                updated_at: null,
+                creator: "admin",
+                updater: "admin",
+                version: 1,
+            },
+            {
+                id: 3,
+                upsteam_url: "https://google.com",
+                downstream_uri: "/dddddddfff",
+                created_at: null,
+                updated_at: null,
+                creator: "admin",
+                updater: "admin",
+                version: 1,
+            },
+            {
+                id: 4,
+                upsteam_url: "https://google.com",
+                downstream_uri: "/dddddddfff",
+                created_at: null,
+                updated_at: null,
+                creator: "admin",
+                updater: "admin",
+                version: 1,
+            },
+            {
+                id: 5,
+                upsteam_url: "https://google.com",
+                downstream_uri: "/dddddddfff",
+                created_at: null,
+                updated_at: null,
+                creator: "admin",
+                updater: "admin",
+                version: 1,
+            },
+            {
+                id: 5,
+                upsteam_url: "https://google.com",
+                downstream_uri: "/dddddddfff",
+                created_at: null,
+                updated_at: null,
+                creator: "admin",
+                updater: "admin",
+                version: 1,
+            },
+            {
+                id: 6,
+                upsteam_url: "https://google.com",
+                downstream_uri: "/dddddddfff",
+                created_at: null,
+                updated_at: null,
+                creator: "admin",
+                updater: "admin",
+                version: 1,
+            },
+            {
+                id: 7,
                 upsteam_url: "https://google.com",
                 downstream_uri: "/dddddddfff",
                 created_at: null,
@@ -99,6 +202,15 @@ export default defineComponent({
     },
 
     methods: {
+        handleSubmit() {
+            alert("-- form submit --");
+        },
+        deleteItemById(id: number) {
+            alert(id);
+        },
+        openModalToEditItemById(id: number) {
+            alert(id);
+        },
         filterExact(source: any): any {
             if (this.filter === "") {
                 return true;
@@ -106,11 +218,11 @@ export default defineComponent({
             return source?.toString?.() === this.filter;
         },
 
-        updateFilter(filter: any) {
+        updateFilter(filter: string) {
             this.filter = filter;
         },
 
-        debouncedUpdateFilter: debounce(function (filter) {
+        debouncedUpdateFilter: debounce(function (filter: string) {
             this.updateFilter(filter);
         }, 600),
     },
@@ -163,5 +275,15 @@ export default defineComponent({
 
 .va-data-table__table-td {
     color: var(--va-text-primary) !important;
+}
+
+.va-modal--no-padding {
+    padding: 0;
+    padding-bottom: 5%;
+    padding-right: 8%;
+}
+
+.va-virtual-scroller {
+    width: unset;
 }
 </style>

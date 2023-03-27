@@ -5,6 +5,7 @@ package api
 
 import (
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/golang-jwt/jwt/v4"
@@ -28,6 +29,7 @@ func init() {
 func Serve(listenAddress string) {
 	// Middleware
 	EchoInstance.Use(middleware.Recover())
+	EchoInstance.Use(middleware.Logger())
 
 	jwtConfig := echojwt.Config{
 		NewClaimsFunc: func(c echo.Context) jwt.Claims {
@@ -46,6 +48,22 @@ func Serve(listenAddress string) {
 	EchoInstance.GET("/api/urls/", handlers.ListURLs, jwtMiddleware)
 	EchoInstance.POST("/api/user/urls/", handlers.CreateURL, jwtMiddleware)
 	EchoInstance.DELETE("/api/user/urls/:id/", handlers.RemoveURL, jwtMiddleware)
+
+	u, _ := url.Parse("http://127.0.0.1:3000")
+	EchoInstance.Use(middleware.ProxyWithConfig(
+		middleware.ProxyConfig{
+			Balancer: middleware.NewRoundRobinBalancer(
+				[]*middleware.ProxyTarget{
+					{
+						URL: u,
+					},
+				},
+			),
+			Skipper: func(c echo.Context) bool {
+				return !strings.HasPrefix(c.Request().URL.RequestURI(), "/admin")
+			},
+		},
+	))
 
 	EchoInstance.Any("/*", func(c echo.Context) error {
 		u := &db.URL{
