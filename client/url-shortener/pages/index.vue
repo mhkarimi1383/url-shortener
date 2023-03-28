@@ -13,7 +13,7 @@
         <div>
             <main id="va-app-bar-hide">
                 <va-sidebar class="sidebar" hoverable minimized-width="64px">
-                    <va-sidebar-item v-for="item in items" :key="item.title" :active="item.active">
+                    <va-sidebar-item v-for="item in sidebarItems" :key="item.title" :active="item.active">
                         <va-sidebar-item-content>
                             <va-icon :name="item.icon" />
                             <va-sidebar-item-title>
@@ -82,6 +82,24 @@
 <script lang="ts">
 import debounce from "lodash/debounce.js";
 import { defineComponent } from "vue";
+import { VaModal } from "vuestic-ui/web-components";
+
+interface url {
+    id: number,
+    upsteam_url: string,
+    downstream_uri: string,
+    created_at: string | null,
+    updated_at: string | null,
+    creator: string,
+    updater: string,
+    version: number,
+};
+
+interface sidebarItem {
+    title: string,
+    icon: string,
+    active: boolean,
+}
 
 export default defineComponent({
     data() {
@@ -97,7 +115,7 @@ export default defineComponent({
             { key: "actions" },
         ];
 
-        const urls = [
+        const urls: url[] = [
             {
                 id: 1,
                 upsteam_url: "https://google.com",
@@ -183,16 +201,16 @@ export default defineComponent({
 
         return {
             value: "",
-            urls,
+            urls: urls,
             columns,
             input,
             filter: input,
             isDebounceInput: false,
             useCustomFilteringFn: false,
             filteredCount: urls.length,
-            items: [
+            sidebarItems: [
                 { title: "URLs", icon: "link", active: true },
-            ],
+            ] as sidebarItem[],
         };
     },
     computed: {
