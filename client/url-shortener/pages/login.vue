@@ -1,9 +1,9 @@
-<template>
-    <div class="login-form-container">
-        <va-form tag="form" @submit.prevent="handleSubmit" class="login-form">
-            <va-input v-model="username" label="Username" class="input" />
-            <va-input v-model="password" class="mt-3 input" type="password" label="Password" />
-            <va-button type="submit" class="mt-3">
+<template id="login-page">
+    <div>
+        <va-form tag="form" @submit.prevent="handleSubmit">
+            <va-input class="form-item first-item" v-model="username" label="Username" />
+            <va-input class="form-item" v-model="password" type="password" label="Password" />
+            <va-button class="form-item last-item" type="submit">
                 Login
             </va-button>
         </va-form>
@@ -27,28 +27,36 @@ export default {
 </script>
 
 <style scoped>
-body {
-    margin: 0;
-    overflow: hidden;
-}
-
-.login-form-container {
+form {
     display: flex;
-    justify-content: center;
     align-items: center;
-    min-height: 90vh;
+    height: 100vh;
+    flex-direction: column;
+    margin-left: 20%;
+    margin-right: 20%;
 }
 
-.login-form {
-    width: 90%;
-    max-width: 400px;
-    padding: 20px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+
+/* I Don't know how, But it works */
+.last-item {
+    margin-bottom: 30%;
 }
 
-.input {
-    margin-bottom: 10px;
+.first-item {
+    margin-top: 30%;
+}
+
+@media only screen and (max-width : 768px) {
+    .last-item {
+        margin-bottom: 100%;
+    }
+
+    .first-item {
+        margin-top: 100%;
+    }
+}
+
+.form-item {
+    width: 100%;
 }
 </style>
