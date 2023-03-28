@@ -11,6 +11,8 @@
 </template>
 
 <script lang="ts">
+
+
 export default {
     data() {
         return {
@@ -19,8 +21,17 @@ export default {
         };
     },
     methods: {
-        handleSubmit() {
-            alert("-- form submit --");
+        async handleSubmit() {
+            const config = useRuntimeConfig();
+            const { data } = await useFetch(config.public.baseURL + "/api/login/", {
+                method: "POST",
+                body: {
+                    "name": this.username,
+                    "password": this.password,
+                }
+            });
+            console.log("token");
+            console.log(data.value.token);
         },
     },
 };
