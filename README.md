@@ -67,3 +67,8 @@ You can build the project by running `./build.sh` script and run it by `./run.sh
 or simply use `./start.sh` to do both
 
 it will start both frontend and backend, you can see frondend at the same port as backend (in `/admin` path) checkout [./api/server.go](./api/server.go) to see more info
+
+### TODO
+
+- [] Handle backend errors in frontend
+- [] Better token management on backend
