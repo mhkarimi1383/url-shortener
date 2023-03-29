@@ -5,7 +5,7 @@
                 style="margin-left: 2vh; font-family: var(--va-font-family); font-weight: var(--va-button-font-weight);">URL
                 Shortener</span>
             <va-spacer />
-            <va-button style="margin-right: 2vh;" icon="logout" color="text-inverted" preset="plain">
+            <va-button style="margin-right: 2vh;" icon="logout" color="text-inverted" preset="plain" @click="handleLogout">
                 Logout
             </va-button>
         </va-app-bar>
@@ -30,7 +30,7 @@
                         </template>
                         Let's Short LoOoOoOng Web URLs
                     </va-alert>
-                    <va-button @click="$refs.modal.show()"
+                    <va-button @click="$refs.modal.show()" icon="add"
                         style="grid-row: 2; grid-column: 1; top: 0; margin-left: 3vh; margin-right: 1vh; margin-bottom: 0; height: 5vh;"
                         class="submit-button" type="submit">
                         New
@@ -44,11 +44,11 @@
                                     <!-- <br /> -->
                                 </va-card-content>
                                 <va-card-actions>
-                                    <va-button color="warning" @click="cancel">
-                                        Cancel :/
+                                    <va-button icon="backspace" color="warning" @click="cancel">
+                                        Cancel
                                     </va-button>
-                                    <va-button color="primary" class="submit-button" type="submit" @click="ok">
-                                        Ok ;)
+                                    <va-button icon="done" color="primary" class="submit-button" type="submit" @click="ok">
+                                        Ok
                                     </va-button>
                                 </va-card-actions>
                             </va-form>
@@ -62,8 +62,17 @@
                         <va-checkbox style="grid-column: 2; margin-left: 3vh;" v-model="useCustomFilteringFn"
                             label="Exact match" />
                         <va-checkbox style="grid-column: 3;" v-model="isDebounceInput" label="Debounce input" />
+
+                        <va-input style="grid-row: 2;grid-column: 1; margin-left: 0; margin-top: 1vh;"
+                            v-model.number="perPage" class="flex flex-col mb-2 md3" type="number" placeholder="Items..."
+                            label="Items per page" @change="fetchData()" />
+
+                        <va-input style="grid-row: 2;grid-column: 2; margin-left: 1vh; margin-top: 1vh;"
+                            v-model.number="currentPage" class="flex flex-col mb-2 md3" type="number" placeholder="Page..."
+                            label="Current page" @change="fetchData()" />
                     </div>
-                    <va-data-table virtual-scroller
+                    <va-data-table virtual-scroller :loading="loading" v-model="urls" :per-page="perPage"
+                        :current-page="currentPage"
                         style="grid-row: 4; grid-column: 1; top: 0;margin-left: 3vh; margin-top: 2%; height: 40vh;"
                         :columns="columns" class="data-table" striped :items="urls" :filter="filter"
                         :filter-method="customFilteringFn" @filtered="filteredCount = $event.items.length">
@@ -71,6 +80,15 @@
                         <template #cell(actions)="{ rowIndex }">
                             <va-button preset="plain" icon="edit" @click="openModalToEditItemById(rowIndex)" />
                             <va-button preset="plain" icon="delete" @click="deleteItemById(rowIndex)" />
+                        </template>
+                        <template #bodyAppend>
+                            <tr>
+                                <td colspan="9">
+                                    <div>
+                                        <va-pagination v-model="currentPage" input :pages="pages" @change="fetchData()" />
+                                    </div>
+                                </td>
+                            </tr>
                         </template>
                     </va-data-table>
                 </div>
@@ -82,7 +100,7 @@
 <script lang="ts">
 import debounce from "lodash/debounce.js";
 import { defineComponent } from "vue";
-import { VaModal } from "vuestic-ui/web-components";
+import { useToast } from 'vuestic-ui';
 
 interface url {
     id: number,
@@ -102,7 +120,7 @@ interface sidebarItem {
 }
 
 export default defineComponent({
-    data() {
+    async setup() {
         const columns = [
             { key: "id", sortable: true },
             { key: "upsteam_url", sortable: true, label: "upsteam url" },
@@ -115,113 +133,94 @@ export default defineComponent({
             { key: "actions" },
         ];
 
-        const urls: url[] = [
-            {
-                id: 1,
-                upsteam_url: "https://google.com",
-                downstream_uri: "/dddddddfff",
-                created_at: null,
-                updated_at: null,
-                creator: "admin",
-                updater: "admin",
-                version: 1,
-            },
-            {
-                id: 2,
-                upsteam_url: "https://google.com",
-                downstream_uri: "/dddddddfff",
-                created_at: null,
-                updated_at: null,
-                creator: "admin",
-                updater: "admin",
-                version: 1,
-            },
-            {
-                id: 3,
-                upsteam_url: "https://google.com",
-                downstream_uri: "/dddddddfff",
-                created_at: null,
-                updated_at: null,
-                creator: "admin",
-                updater: "admin",
-                version: 1,
-            },
-            {
-                id: 4,
-                upsteam_url: "https://google.com",
-                downstream_uri: "/dddddddfff",
-                created_at: null,
-                updated_at: null,
-                creator: "admin",
-                updater: "admin",
-                version: 1,
-            },
-            {
-                id: 5,
-                upsteam_url: "https://google.com",
-                downstream_uri: "/dddddddfff",
-                created_at: null,
-                updated_at: null,
-                creator: "admin",
-                updater: "admin",
-                version: 1,
-            },
-            {
-                id: 5,
-                upsteam_url: "https://google.com",
-                downstream_uri: "/dddddddfff",
-                created_at: null,
-                updated_at: null,
-                creator: "admin",
-                updater: "admin",
-                version: 1,
-            },
-            {
-                id: 6,
-                upsteam_url: "https://google.com",
-                downstream_uri: "/dddddddfff",
-                created_at: null,
-                updated_at: null,
-                creator: "admin",
-                updater: "admin",
-                version: 1,
-            },
-            {
-                id: 7,
-                upsteam_url: "https://google.com",
-                downstream_uri: "/dddddddfff",
-                created_at: null,
-                updated_at: null,
-                creator: "admin",
-                updater: "admin",
-                version: 1,
-            }
-        ]
-        const input = "";
-
         return {
             value: "",
-            urls: urls,
+            urls: [],
             columns,
-            input,
-            filter: input,
+            input: "",
+            filter: "",
             isDebounceInput: false,
             useCustomFilteringFn: false,
-            filteredCount: urls.length,
+            loading: true,
+            filteredCount: 0,
+            perPage: 5,
+            currentPage: 1,
             sidebarItems: [
                 { title: "URLs", icon: "link", active: true },
             ] as sidebarItem[],
         };
     },
+    mounted() {
+        this.fetchData().finally(() => {
+            this.loading = false;
+        });
+    },
     computed: {
+        filteredUrls() {
+            if (!this.urls) {
+                return [];
+            }
+            return this.urls.filter((url: url) =>
+                url.upsteam_url.toLowerCase().includes(this.filter.toLowerCase())
+            );
+        },
+        filteredCount(): number {
+            return this.filteredUrls.length;
+        },
         customFilteringFn(): any {
             return this.useCustomFilteringFn ? this.filterExact : undefined;
+        },
+        async pages() {
+            const config = useRuntimeConfig();
+            const { data } = await useFetch(config.public.baseURL + "/api/status/", {
+                method: "GET",
+            }).catch((error: any) => {
+                console.error(error);
+            });
+            return this.perPage && this.perPage !== 0
+                ? Math.ceil(data.number_of_urls / this.perPage)
+                : data.number_of_urls;
         },
     },
 
     methods: {
+        async fetchData() {
+            const { init, close, closeAll } = useToast();
+            console.log("onMounted")
+            const rawTokenInfo = localStorage.getItem('TokenInfo')
+            if (rawTokenInfo === null) {
+                this.$router.push("/login");
+                init({
+                    message: "Login.!",
+                    color: 'danger',
+                });
+            }
+            const tokenInfo = JSON.parse(rawTokenInfo as string);
+
+            console.log("FetchData");
+            const config = useRuntimeConfig();
+            const { data } = await useFetch(config.public.baseURL + "/api/urls/", {
+                method: "GET",
+                headers: {
+                    Authorization: tokenInfo.token_type + " " + tokenInfo.token
+                },
+                params: {
+                    limit: this.perPage,
+                    offset: this.currentPage - 1,
+                }
+            }).catch((error: any) => {
+                console.error(error);
+            });
+            console.log(data);
+            console.table(data.value);
+            this.urls = data.value;
+        },
         handleSubmit() {
             alert("-- form submit --");
+        },
+        handleLogout() {
+            localStorage.removeItem('TokenInfo');
+            this.$router.push("/login");
         },
         deleteItemById(id: number) {
             alert(id);
@@ -303,5 +302,9 @@ export default defineComponent({
 
 .va-virtual-scroller {
     width: unset;
+}
+
+.va-inner-loading--active {
+    margin-top: inherit;
 }
 </style>

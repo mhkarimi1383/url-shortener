@@ -18,6 +18,12 @@ type JWTClaims struct {
 	jwt.RegisteredClaims
 }
 
+type TokenResponse struct {
+	Token      string `json:"token" xml:"token" param:"token" query:"token" form:"token"`
+	ExpireTime int64  `json:"expire_time" xml:"expire_time" param:"expire_time" query:"expire_time" form:"expire_time"`
+	TokenType  string `json:"token_type" xml:"token_type" param:"token_type" query:"token_type" form:"token_type"`
+}
+
 type URL struct {
 	UpsteamURL string `json:"upsteam_url" xml:"upsteam_url" param:"upsteam_url" query:"upsteam_url" form:"upsteam_url"`
 }

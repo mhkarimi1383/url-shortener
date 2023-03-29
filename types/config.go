@@ -9,5 +9,5 @@ type Config struct {
 	DBConnectionString string
 	JWTSecret          string
 	Debug              bool
-	TokenExpireTime    int
+	TokenExpireTime    int64
 }

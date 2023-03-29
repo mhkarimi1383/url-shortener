@@ -3,7 +3,7 @@
         <va-form tag="form" @submit.prevent="handleSubmit">
             <va-input class="form-item first-item" v-model="username" label="Username" />
             <va-input class="form-item" v-model="password" type="password" label="Password" />
-            <va-button class="form-item last-item" type="submit">
+            <va-button icon="login" class="form-item last-item" type="submit">
                 Login
             </va-button>
         </va-form>
@@ -11,8 +11,6 @@
 </template>
 
 <script lang="ts">
-
-
 export default {
     data() {
         return {
@@ -30,8 +28,9 @@ export default {
                     "password": this.password,
                 }
             });
-            console.log("token");
-            console.log(data.value.token);
+            console.table(data.value)
+            localStorage.setItem("TokenInfo", JSON.stringify(data.value))
+            this.$router.push("/")
         },
     },
 };
@@ -46,7 +45,6 @@ form {
     margin-left: 20%;
     margin-right: 20%;
 }
-
 
 /* I Don't know how, But it works */
 .last-item {

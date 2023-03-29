@@ -100,7 +100,7 @@ func Login(c echo.Context) error {
 		Name:   input.Name,
 		UserID: u.ID,
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 72)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * time.Duration(config.GetConfig().TokenExpireTime))),
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -109,7 +109,9 @@ func Login(c echo.Context) error {
 		return err
 	}
 
-	return c.JSON(http.StatusOK, echo.Map{
-		"token": t,
+	return c.JSON(http.StatusOK, &request.TokenResponse{
+		Token:      t,
+		ExpireTime: time.Now().Add(time.Hour * time.Duration(config.GetConfig().TokenExpireTime)).UnixMilli(),
+		TokenType:  "Bearer",
 	})
 }

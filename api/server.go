@@ -30,6 +30,7 @@ func Serve(listenAddress string) {
 	// Middleware
 	EchoInstance.Use(middleware.Recover())
 	EchoInstance.Use(middleware.Logger())
+	EchoInstance.Use(middleware.CORS())
 
 	jwtConfig := echojwt.Config{
 		NewClaimsFunc: func(c echo.Context) jwt.Claims {

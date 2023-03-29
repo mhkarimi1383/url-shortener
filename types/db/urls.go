@@ -69,6 +69,12 @@ func ListURLs(limit, offset int) ([]URL, error) {
 	return urls, err
 }
 
+func CountURLs(limit, offset int) (int64, error) {
+	e := GetEngine()
+	count, err := e.Count(new(URL))
+	return count, err
+}
+
 func ListURLsByUserID(limit, offset int, userID int64) ([]URL, error) {
 	var urls []URL
 	e := GetEngine()

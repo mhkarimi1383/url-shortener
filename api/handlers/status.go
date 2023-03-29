@@ -28,7 +28,13 @@ func Status(c echo.Context) error {
 	if err != nil {
 		return err
 	}
+
+	urlCount, err := db.CountUsers()
+	if err != nil {
+		return err
+	}
 	return c.JSON(http.StatusOK, echo.Map{
-		"first_run": count == 0,
+		"first_run":      count == 0,
+		"number_of_urls": urlCount,
 	})
 }
