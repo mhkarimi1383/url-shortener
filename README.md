@@ -10,7 +10,7 @@ The Goal is to be minimalist but scalable and powerful
 
 > I Will try to keep this section of readme up to date
 
-Connecting Login page to API
+Connecting main data to API
 
 ## Powered By
 
