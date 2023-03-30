@@ -75,7 +75,7 @@ func Serve(listenAddress string) {
 		if err != nil {
 			return err
 		}
-		return c.Redirect(http.StatusTemporaryRedirect, u.UpsteamURL)
+		return c.Redirect(http.StatusTemporaryRedirect, u.UpstreamURL)
 	})
 
 	// Start server

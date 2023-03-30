@@ -15,7 +15,7 @@ const URLNotFoundError = "unable to find given url"
 
 type URL struct {
 	ID            int64     `xorm:"pk autoincr" json:"id"`
-	UpsteamURL    string    `xorm:"not null" json:"upsteam_url"`
+	UpstreamURL   string    `xorm:"not null" json:"upstream_url"`
 	DownStreamURI string    `xorm:"not null unique" json:"downstream_uri"`
 	CreatedAt     time.Time `xorm:"created not null" json:"created_at"`
 	UpdatedAt     time.Time `xorm:"updated null" json:"updated_at"`

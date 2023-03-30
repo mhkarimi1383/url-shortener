@@ -72,14 +72,14 @@ func CreateURL(c echo.Context) error {
 		return err
 	}
 
-	if !url.IsValidUrl(input.UpsteamURL) {
-		return errors.ErrorToHTTPErrorAdapter(http.StatusBadRequest, "UpsteamURL is not a valid URL", fmt.Errorf("upstreamURL was is not a valid url"))
+	if !url.IsValidUrl(input.UpstreamURL) {
+		return errors.ErrorToHTTPErrorAdapter(http.StatusBadRequest, "UpstreamURL is not a valid URL", fmt.Errorf("upstreamURL was is not a valid url"))
 	}
 
 	u := &db.URL{
 		Creator:       claims.UserID,
-		UpsteamURL:    input.UpsteamURL,
-		DownStreamURI: fmt.Sprintf("%x", sha256.Sum256([]byte(input.UpsteamURL)))[:8],
+		UpstreamURL:   input.UpstreamURL,
+		DownStreamURI: fmt.Sprintf("%x", sha256.Sum256([]byte(input.UpstreamURL)))[:8],
 	}
 	if err := u.Insert(); err != nil {
 		return err

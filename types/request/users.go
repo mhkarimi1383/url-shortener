@@ -25,5 +25,5 @@ type TokenResponse struct {
 }
 
 type URL struct {
-	UpsteamURL string `json:"upsteam_url" xml:"upsteam_url" param:"upsteam_url" query:"upsteam_url" form:"upsteam_url"`
+	UpstreamURL string `json:"upstream_url" xml:"upstream_url" param:"upstream_url" query:"upstream_url" form:"upstream_url"`
 }

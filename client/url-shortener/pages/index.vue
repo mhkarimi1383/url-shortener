@@ -35,20 +35,19 @@
                         class="submit-button" type="submit">
                         New
                     </va-button>
-                    <va-modal no-padding style="padding-bottom: 10%;" ref="modal" stateful :message="'hi'">
+                    <va-modal no-padding style="padding-bottom: 10%;" ref="modal" stateful>
                         <template #content="{ ok, cancel }">
                             <va-form tag="form" id="submition-form" @submit.prevent="handleSubmit">
                                 <va-card-content>
-                                    <va-input v-model="value" type="url" label="url"
+                                    <va-input :v-model="value" type="url" label="url"
                                         :rules="[(v) => v.length > 0 || `This field is required`]" />
-                                    <!-- <br /> -->
                                 </va-card-content>
                                 <va-card-actions>
                                     <va-button icon="backspace" color="warning" @click="cancel">
                                         Cancel
                                     </va-button>
                                     <va-button icon="done" color="primary" class="submit-button" type="submit" @click="ok">
-                                        Ok
+                                        OK
                                     </va-button>
                                 </va-card-actions>
                             </va-form>
@@ -83,7 +82,7 @@
                         </template>
                         <template #bodyAppend>
                             <tr>
-                                <td colspan="9">
+                                <td>
                                     <div>
                                         <va-pagination v-model="currentPage" input :pages="pages" @change="fetchData()" />
                                     </div>
@@ -104,7 +103,7 @@ import { useToast } from 'vuestic-ui';
 
 interface url {
     id: number,
-    upsteam_url: string,
+    upstream_url: string,
     downstream_uri: string,
     created_at: string | null,
     updated_at: string | null,
@@ -117,13 +116,13 @@ interface sidebarItem {
     title: string,
     icon: string,
     active: boolean,
-}
+};
 
 export default defineComponent({
     async setup() {
         const columns = [
             { key: "id", sortable: true },
-            { key: "upsteam_url", sortable: true, label: "upsteam url" },
+            { key: "upstream_url", sortable: true, label: "upstream url" },
             { key: "downstream_uri", sortable: true, label: "downstream uri" },
             { key: "created_at", sortable: true, label: "created at" },
             { key: "updated_at", sortable: true, label: "updated at" },
@@ -145,6 +144,10 @@ export default defineComponent({
             filteredCount: 0,
             perPage: 5,
             currentPage: 1,
+            pages: 1,
+            status: {
+                number_of_urls: 0,
+            },
             sidebarItems: [
                 { title: "URLs", icon: "link", active: true },
             ] as sidebarItem[],
@@ -161,7 +164,7 @@ export default defineComponent({
                 return [];
             }
             return this.urls.filter((url: url) =>
-                url.upsteam_url.toLowerCase().includes(this.filter.toLowerCase())
+                url.upstream_url.toLowerCase().includes(this.filter.toLowerCase())
             );
         },
         filteredCount(): number {
@@ -170,22 +173,11 @@ export default defineComponent({
         customFilteringFn(): any {
             return this.useCustomFilteringFn ? this.filterExact : undefined;
         },
-        async pages() {
-            const config = useRuntimeConfig();
-            const { data } = await useFetch(config.public.baseURL + "/api/status/", {
-                method: "GET",
-            }).catch((error: any) => {
-                console.error(error);
-            });
-            return this.perPage && this.perPage !== 0
-                ? Math.ceil(data.number_of_urls / this.perPage)
-                : data.number_of_urls;
-        },
     },
 
     methods: {
         async fetchData() {
-            const { init, close, closeAll } = useToast();
+            const { init } = useToast();
             console.log("onMounted")
             const rawTokenInfo = localStorage.getItem('TokenInfo')
             if (rawTokenInfo === null) {
@@ -199,7 +191,7 @@ export default defineComponent({
 
             console.log("FetchData");
             const config = useRuntimeConfig();
-            const { data } = await useFetch(config.public.baseURL + "/api/urls/", {
+            await useFetch(config.public.baseURL + "/api/urls/", {
                 method: "GET",
                 headers: {
                     Authorization: tokenInfo.token_type + " " + tokenInfo.token
@@ -207,13 +199,28 @@ export default defineComponent({
                 params: {
                     limit: this.perPage,
                     offset: this.currentPage - 1,
-                }
+                },
             }).catch((error: any) => {
                 console.error(error);
+            }).then((data) => {
+                console.log((data as any).data);
+                console.table((data as any).data);
+                this.urls = (data as any).data.value;
             });
-            console.log(data);
-            console.table(data.value);
-            this.urls = data.value;
+
+            await useFetch(config.public.baseURL + "/api/status/", {
+                method: "GET",
+            }).catch((error: any) => {
+                console.error(error);
+            }).then((data) => {
+                console.table((data as any).data);
+                this.status = (data as any).data.value;
+                this.pages = this.perPage && this.perPage !== 0 ? Math.ceil((data as any).data.number_of_urls / this.perPage) : ((data as any).data.number_of_urls);
+            }).finally(() => {
+                this.loading = false
+            });
+
+
         },
         handleSubmit() {
             alert("-- form submit --");
