@@ -39,8 +39,8 @@
                         <template #content="{ ok, cancel }">
                             <va-form tag="form" id="submition-form" @submit.prevent="handleSubmit">
                                 <va-card-content>
-                                    <va-input :v-model="value" type="url" label="url"
-                                        :rules="[(v) => v.length > 0 || `This field is required`]" />
+                                    <va-input v-model="value" type="url" label="url"
+                                        :rules="[(v: string) => v.length > 0 || `This field is required`]" />
                                 </va-card-content>
                                 <va-card-actions>
                                     <va-button icon="backspace" color="warning" @click="cancel">
@@ -118,6 +118,16 @@ interface sidebarItem {
     active: boolean,
 };
 
+interface tokenInfo {
+    expire_time: number,
+    token: string,
+    token_type: string,
+};
+
+interface newURLReq {
+    upstream_url: string,
+};
+
 export default defineComponent({
     async setup() {
         const columns = [
@@ -176,19 +186,20 @@ export default defineComponent({
     },
 
     methods: {
-        async fetchData() {
+        getTokenInfo(): tokenInfo {
             const { init } = useToast();
-            console.log("onMounted")
             const rawTokenInfo = localStorage.getItem('TokenInfo')
             if (rawTokenInfo === null) {
-                this.$router.push("/login");
+                this.$router.push("/auth/login");
                 init({
                     message: "Login.!",
                     color: 'danger',
                 });
             }
-            const tokenInfo = JSON.parse(rawTokenInfo as string);
-
+            return JSON.parse(rawTokenInfo as string);
+        },
+        async fetchData() {
+            const tokenInfo = this.getTokenInfo();
             console.log("FetchData");
             const config = useRuntimeConfig();
             await useFetch(config.public.baseURL + "/api/urls/", {
@@ -222,12 +233,30 @@ export default defineComponent({
 
 
         },
-        handleSubmit() {
-            alert("-- form submit --");
+        async handleSubmit() {
+            const tokenInfo = this.getTokenInfo();
+            const config = useRuntimeConfig();
+            const reqBody: newURLReq = {
+                upstream_url: this.value,
+            };
+            await useFetch(config.public.baseURL + "/api/user/urls/", {
+                method: "POST",
+                headers: {
+                    Authorization: tokenInfo.token_type + " " + tokenInfo.token
+                },
+                body: reqBody,
+            }).catch((error: any) => {
+                console.error(error);
+            }).then((data) => {
+                console.log((data as any).data);
+                console.table((data as any).data);
+                this.urls = (data as any).data.value;
+            });
+
         },
         handleLogout() {
             localStorage.removeItem('TokenInfo');
-            this.$router.push("/login");
+            this.$router.push("/auth/login");
         },
         deleteItemById(id: number) {
             alert(id);
