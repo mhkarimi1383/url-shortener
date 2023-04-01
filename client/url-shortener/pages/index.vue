@@ -30,7 +30,7 @@
                         </template>
                         Let's Short LoOoOoOng Web URLs
                     </va-alert>
-                    <va-button @click="$refs.modal.show()" icon="add"
+                    <va-button @click="($refs.modal as any).show()" icon="add"
                         style="grid-row: 2; grid-column: 1; top: 0; margin-left: 3vh; margin-right: 1vh; margin-bottom: 0; height: 5vh;"
                         class="submit-button" type="submit">
                         New
@@ -70,8 +70,7 @@
                             v-model.number="currentPage" class="flex flex-col mb-2 md3" type="number" placeholder="Page..."
                             label="Current page" @change="fetchData()" />
                     </div>
-                    <va-data-table virtual-scroller :loading="loading" v-model="urls" :per-page="perPage"
-                        :current-page="currentPage"
+                    <va-data-table virtual-scroller :loading="loading" :per-page="perPage" :current-page="currentPage"
                         style="grid-row: 4; grid-column: 1; top: 0;margin-left: 3vh; margin-top: 2%; height: 40vh;"
                         :columns="columns" class="data-table" striped :items="urls" :filter="filter"
                         :filter-method="customFilteringFn" @filtered="filteredCount = $event.items.length">
@@ -99,7 +98,8 @@
 <script lang="ts">
 import debounce from "lodash/debounce.js";
 import { defineComponent } from "vue";
-import { useToast } from 'vuestic-ui';
+import { useToast, VaModal } from 'vuestic-ui';
+const { init: newToast } = useToast();
 
 interface url {
     id: number,
@@ -128,6 +128,11 @@ interface newURLReq {
     upstream_url: string,
 };
 
+interface statusInfo {
+    first_run: boolean,
+    number_of_urls: number,
+}
+
 export default defineComponent({
     async setup() {
         const columns = [
@@ -142,6 +147,11 @@ export default defineComponent({
             { key: "actions" },
         ];
 
+        const status: statusInfo = {
+            first_run: false,
+            number_of_urls: 0,
+        };
+
         return {
             value: "",
             urls: [],
@@ -155,18 +165,22 @@ export default defineComponent({
             perPage: 5,
             currentPage: 1,
             pages: 1,
-            status: {
-                number_of_urls: 0,
-            },
+            status: status,
             sidebarItems: [
                 { title: "URLs", icon: "link", active: true },
             ] as sidebarItem[],
         };
     },
-    mounted() {
-        this.fetchData().finally(() => {
-            this.loading = false;
-        });
+    async mounted() {
+        console.log("mounted");
+        await this.fetchData();
+        this.loading = false;
+        console.log("fetch");
+        console.table(this.urls);
+        console.table(this.status);
+        if (this.status.first_run === true) {
+            newToast("TODO: Register on first run");
+        }
     },
     computed: {
         filteredUrls() {
@@ -187,11 +201,10 @@ export default defineComponent({
 
     methods: {
         getTokenInfo(): tokenInfo {
-            const { init } = useToast();
             const rawTokenInfo = localStorage.getItem('TokenInfo')
             if (rawTokenInfo === null) {
                 this.$router.push("/auth/login");
-                init({
+                newToast({
                     message: "Login.!",
                     color: 'danger',
                 });
@@ -200,7 +213,6 @@ export default defineComponent({
         },
         async fetchData() {
             const tokenInfo = this.getTokenInfo();
-            console.log("FetchData");
             const config = useRuntimeConfig();
             await useFetch(config.public.baseURL + "/api/urls/", {
                 method: "GET",
@@ -214,8 +226,6 @@ export default defineComponent({
             }).catch((error: any) => {
                 console.error(error);
             }).then((data) => {
-                console.log((data as any).data);
-                console.table((data as any).data);
                 this.urls = (data as any).data.value;
             });
 
@@ -224,14 +234,11 @@ export default defineComponent({
             }).catch((error: any) => {
                 console.error(error);
             }).then((data) => {
-                console.table((data as any).data);
-                this.status = (data as any).data.value;
+                this.status = ((data as any).data.value as statusInfo);
                 this.pages = this.perPage && this.perPage !== 0 ? Math.ceil((data as any).data.number_of_urls / this.perPage) : ((data as any).data.number_of_urls);
             }).finally(() => {
                 this.loading = false
             });
-
-
         },
         async handleSubmit() {
             const tokenInfo = this.getTokenInfo();
@@ -248,8 +255,6 @@ export default defineComponent({
             }).catch((error: any) => {
                 console.error(error);
             }).then((data) => {
-                console.log((data as any).data);
-                console.table((data as any).data);
                 this.urls = (data as any).data.value;
             });
 

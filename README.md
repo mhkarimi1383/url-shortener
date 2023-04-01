@@ -10,7 +10,8 @@ The Goal is to be minimalist but scalable and powerful
 
 > I Will try to keep this section of readme up to date
 
-Connecting main data to API
+Connecting main data to API (We have problems with `v-model`)
+Creating URL on Frontend done.!
 
 ## Powered By
 
