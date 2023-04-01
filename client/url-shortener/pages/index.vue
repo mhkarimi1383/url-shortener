@@ -257,7 +257,6 @@ export default defineComponent({
             }).then((data) => {
                 this.urls = (data as any).data.value;
             });
-
         },
         handleLogout() {
             localStorage.removeItem('TokenInfo');
