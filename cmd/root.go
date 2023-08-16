@@ -49,6 +49,8 @@ func Execute() {
 func init() {
 	var cfg configuration.Config
 	rootCmd.PersistentFlags().StringVarP(&cfg.ListenAddress, "listen-address", "l", "127.0.0.1:8080", "Host:Port to listen")
+
+	configuration.SetConfig(&cfg)
 }
 
 func start(_ *cobra.Command, _ []string) {
