@@ -17,10 +17,14 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 package cmd
 
 import (
+	"github.com/brpaz/echozap"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	"github.com/mhkarimi1383/url-shortener/internal/flagutil"
 	"github.com/mhkarimi1383/url-shortener/internal/log"
 	"github.com/mhkarimi1383/url-shortener/types/configuration"
 	"github.com/spf13/cobra"
+	"go.uber.org/zap"
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -48,5 +52,14 @@ func init() {
 }
 
 func start(_ *cobra.Command, _ []string) {
-	println("Hello World.!")
+	e := echo.New()
+
+	e.Use(echozap.ZapLogger(log.Logger))
+	e.Use(middleware.Logger())
+	e.Use(middleware.Recover())
+
+	log.Logger.Fatal(
+		e.Start(configuration.GetConfig().ListenAddress).Error(),
+		zap.String("listen-address", configuration.GetConfig().ListenAddress),
+	)
 }

@@ -16,7 +16,10 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 package main
 
-import "github.com/mhkarimi1383/url-shortener/cmd"
+import (
+	"github.com/mhkarimi1383/url-shortener/cmd"
+	_ "go.uber.org/automaxprocs"
+)
 
 func main() {
 	cmd.Execute()
