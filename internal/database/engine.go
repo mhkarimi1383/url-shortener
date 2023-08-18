@@ -5,6 +5,7 @@ import (
 
 	"go.uber.org/zap"
 	"xorm.io/xorm"
+	"xorm.io/xorm/names"
 
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/jackc/pgx/v5/stdlib"
@@ -18,17 +19,18 @@ var Engine *xorm.Engine
 
 func Init() {
 	var err error
-	Engine, err = xorm.NewEngine(configuration.GetConfig().DatabaseEngine, configuration.GetConfig().DatabaseConnectionString)
+	Engine, err = xorm.NewEngine(configuration.CurrentConfig.DatabaseEngine, configuration.CurrentConfig.DatabaseConnectionString)
 	if err != nil {
 		log.Logger.Panic(
 			err.Error(),
-			zap.String("driver", configuration.GetConfig().DatabaseEngine),
-			zap.String("connection-string", configuration.GetConfig().DatabaseConnectionString),
+			zap.String("driver", configuration.CurrentConfig.DatabaseEngine),
+			zap.String("connection-string", configuration.CurrentConfig.DatabaseConnectionString),
 		)
 	}
 
-	Engine.SetMaxIdleConns(configuration.GetConfig().DatabaseMaxIdleConnections)
-	Engine.SetMaxOpenConns(configuration.GetConfig().DatabaseMaxOpenConnections)
-	Engine.SetConnMaxLifetime(configuration.GetConfig().DatabaseMaxConnectionLifetime * time.Second)
+	Engine.SetMapper(names.SameMapper{})
+	Engine.SetMaxIdleConns(configuration.CurrentConfig.DatabaseMaxIdleConnections)
+	Engine.SetMaxOpenConns(configuration.CurrentConfig.DatabaseMaxOpenConnections)
+	Engine.SetConnMaxLifetime(configuration.CurrentConfig.DatabaseMaxConnectionLifetime * time.Second)
 	Engine.SetLogger(newZapLogger(log.Logger.Sugar()))
 }

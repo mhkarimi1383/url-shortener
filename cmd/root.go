@@ -16,7 +16,10 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 */package cmd
 
 import (
+	"os"
+
 	"github.com/brpaz/echozap"
+	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/mhkarimi1383/url-shortener/internal/database"
@@ -35,6 +38,8 @@ var rootCmd = &cobra.Command{
 	Run:   start,
 }
 
+var cfg configuration.Config
+
 func Execute() {
 	if invalid := flagutil.SetFlagsFromEnv(rootCmd.PersistentFlags(), "USH"); invalid.String != "" {
 		log.Logger.Panic("Invalid environemt values provided", invalid)
@@ -47,7 +52,6 @@ func Execute() {
 }
 
 func init() {
-	var cfg configuration.Config
 	rootCmd.PersistentFlags().StringVarP(&cfg.ListenAddress, "listen-address", "l", "127.0.0.1:8080", "Host:Port to listen")
 	rootCmd.PersistentFlags().BoolVarP(&cfg.Migrate, "migrate", "m", true, "To run migrations or not")
 	rootCmd.PersistentFlags().BoolVarP(&cfg.RunServer, "run-server", "s", true, "To run webserver or not")
@@ -57,22 +61,45 @@ func init() {
 		DurationVar(&cfg.DatabaseMaxConnectionLifetime, "database-max-connection-lifetime", 300, "Maximum lifetime for database connections in second used by connection pool")
 	rootCmd.PersistentFlags().StringVar(&cfg.DatabaseEngine, "database-engine", "sqlite", "The engine of database")
 	rootCmd.PersistentFlags().StringVar(&cfg.DatabaseConnectionString, "database-connection-string", "./database.sqlite3", "Connection string of database")
-
-	configuration.SetConfig(&cfg)
 }
 
 func start(_ *cobra.Command, _ []string) {
+	if err := configuration.SetConfig(&cfg); err != nil {
+		if vErrs, ok := err.(validator.ValidationErrors); ok {
+			for _, vErr := range vErrs {
+				log.Logger.Error(
+					"Invalid configuration parameter value",
+					zap.String("namespace", vErr.Namespace()),
+					zap.String("field", vErr.Field()),
+					zap.String("struct-namespace", vErr.StructNamespace()),
+					zap.String("struct-field", vErr.StructField()),
+					zap.String("tag", vErr.Tag()),
+					zap.String("actual-tag", vErr.ActualTag()),
+					zap.String("kind", vErr.Kind().String()),
+					zap.String("type", vErr.Type().String()),
+					zap.Any("value", vErr.Value()),
+					zap.String("param", vErr.Param()),
+				)
+			}
+			os.Exit(1)
+		}
+		log.Logger.Panic(err.Error())
+	}
+
 	database.Init()
+
+	if configuration.CurrentConfig.Migrate {
+	  database.RunMigrations()
+	}
 	e := echo.New()
 
 	e.Use(echozap.ZapLogger(log.Logger))
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
-
-	if configuration.GetConfig().RunServer {
+	if configuration.CurrentConfig.RunServer {
 		log.Logger.Fatal(
-			e.Start(configuration.GetConfig().ListenAddress).Error(),
-			zap.String("listen-address", configuration.GetConfig().ListenAddress),
+			e.Start(configuration.CurrentConfig.ListenAddress).Error(),
+			zap.String("listen-address", configuration.CurrentConfig.ListenAddress),
 		)
 	}
 }

@@ -7,27 +7,24 @@ import (
 )
 
 type Config struct {
-	ListenAddress                 string `validate:"hostname_port"`
-	Migrate                       bool   `validate:"required_without=RunServer"`
-	RunServer                     bool
-	DatabaseEngine                string `validate:"oneof=pgx mysql sqlite"`
-	DatabaseConnectionString      string
-	DatabaseMaxIdleConnections    int
-	DatabaseMaxOpenConnections    int
-	DatabaseMaxConnectionLifetime time.Duration
+	ListenAddress                 string        `validate:"required,hostname_port"`
+	Migrate                       bool          `validate:"required,required_without=RunServer"`
+	RunServer                     bool          `validate:"required"`
+	DatabaseEngine                string        `validate:"required,oneof=pgx mysql sqlite"`
+	DatabaseConnectionString      string        `validate:"required"`
+	DatabaseMaxIdleConnections    int           `validate:"required"`
+	DatabaseMaxOpenConnections    int           `validate:"required"`
+	DatabaseMaxConnectionLifetime time.Duration `validate:"required"`
 }
 
-var currentConfig Config
+var CurrentConfig *Config
 
 func SetConfig(config *Config) error {
-	if err := validator.Validate.Struct(*config); err != nil {
+	err := validator.Validate.Struct(*config)
+	if err != nil {
 		return err
 	}
 
-	currentConfig = *config
+	CurrentConfig = config
 	return nil
-}
-
-func GetConfig() *Config {
-	return &currentConfig
 }
