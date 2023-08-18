@@ -19,3 +19,7 @@ vendor/
 
 # Go workspace file
 go.work
+
+# Local DB
+database.sqlite3
+
