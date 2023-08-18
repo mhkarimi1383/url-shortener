@@ -89,13 +89,13 @@ func start(_ *cobra.Command, _ []string) {
 	database.Init()
 
 	if configuration.CurrentConfig.Migrate {
-	  database.RunMigrations()
+		database.RunMigrations()
 	}
 	e := echo.New()
 
 	e.Use(echozap.ZapLogger(log.Logger))
-	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
+
 	if configuration.CurrentConfig.RunServer {
 		log.Logger.Fatal(
 			e.Start(configuration.CurrentConfig.ListenAddress).Error(),
