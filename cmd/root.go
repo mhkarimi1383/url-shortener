@@ -13,7 +13,8 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
-*/package cmd
+*/
+package cmd
 
 import (
 	"os"
@@ -64,6 +65,7 @@ func init() {
 }
 
 func start(_ *cobra.Command, _ []string) {
+	log.Logger.Info("Setting and Validating configuration parameters")
 	if err := configuration.SetConfig(&cfg); err != nil {
 		if vErrs, ok := err.(validator.ValidationErrors); ok {
 			for _, vErr := range vErrs {
@@ -86,17 +88,23 @@ func start(_ *cobra.Command, _ []string) {
 		log.Logger.Panic(err.Error())
 	}
 
+	log.Logger.Info("Initializing database engine")
 	database.Init()
 
 	if configuration.CurrentConfig.Migrate {
+		log.Logger.Info("Running database migrations")
 		database.RunMigrations()
 	}
+
 	e := echo.New()
 
 	e.Use(echozap.ZapLogger(log.Logger))
 	e.Use(middleware.Recover())
+	e.HidePort = true
+	e.HideBanner = true
 
 	if configuration.CurrentConfig.RunServer {
+		log.Logger.Info("Starting WebServer")
 		log.Logger.Fatal(
 			e.Start(configuration.CurrentConfig.ListenAddress).Error(),
 			zap.String("listen-address", configuration.CurrentConfig.ListenAddress),
