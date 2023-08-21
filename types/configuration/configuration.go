@@ -8,8 +8,8 @@ import (
 
 type Config struct {
 	ListenAddress                 string        `validate:"required,hostname_port"`
-	Migrate                       bool          `validate:"required,required_without=RunServer"`
-	RunServer                     bool          `validate:"required"`
+	Migrate                       bool          `validate:"required_without=RunServer"`
+	RunServer                     bool          `validate:""`
 	DatabaseEngine                string        `validate:"required,oneof=pgx mysql sqlite"`
 	DatabaseConnectionString      string        `validate:"required"`
 	DatabaseMaxIdleConnections    int           `validate:"required"`
