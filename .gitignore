@@ -23,3 +23,5 @@ go.work
 # Local DB
 database.sqlite3
 
+# Local Build
+url-shortener

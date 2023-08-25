@@ -21,14 +21,20 @@ import (
 
 	"github.com/brpaz/echozap"
 	"github.com/go-playground/validator/v10"
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/mhkarimi1383/url-shortener/internal/database"
-	"github.com/mhkarimi1383/url-shortener/internal/flagutil"
-	"github.com/mhkarimi1383/url-shortener/internal/log"
-	"github.com/mhkarimi1383/url-shortener/types/configuration"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
+
+	"github.com/mhkarimi1383/url-shortener/internal/database"
+	"github.com/mhkarimi1383/url-shortener/internal/endpoint/url"
+	"github.com/mhkarimi1383/url-shortener/internal/endpoint/user"
+	"github.com/mhkarimi1383/url-shortener/internal/flagutil"
+	"github.com/mhkarimi1383/url-shortener/internal/log"
+	ivalidator "github.com/mhkarimi1383/url-shortener/internal/validator"
+	"github.com/mhkarimi1383/url-shortener/types/configuration"
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -62,6 +68,7 @@ func init() {
 		DurationVar(&cfg.DatabaseMaxConnectionLifetime, "database-max-connection-lifetime", 300, "Maximum lifetime for database connections in second used by connection pool")
 	rootCmd.PersistentFlags().StringVar(&cfg.DatabaseEngine, "database-engine", "sqlite", "The engine of database")
 	rootCmd.PersistentFlags().StringVar(&cfg.DatabaseConnectionString, "database-connection-string", "./database.sqlite3", "Connection string of database")
+	rootCmd.PersistentFlags().StringVar(&cfg.JWTSecret, "jwt-secret", "superdupersecret", "jwt secret to sign tokens with, strongly recommended to change")
 }
 
 func start(_ *cobra.Command, _ []string) {
@@ -98,13 +105,34 @@ func start(_ *cobra.Command, _ []string) {
 
 	e := echo.New()
 
+	authMiddleware := echojwt.WithConfig(echojwt.Config{
+		NewClaimsFunc: func(c echo.Context) jwt.Claims {
+			return new(jwt.RegisteredClaims)
+		},
+		SigningKey: []byte(configuration.CurrentConfig.JWTSecret),
+	})
+
 	e.Use(echozap.ZapLogger(log.Logger))
 	e.Use(middleware.Recover())
+	e.Validator = ivalidator.EchoValidator
 	e.HidePort = true
 	e.HideBanner = true
 
+	e.Any("/:shortcode", url.Redirect)
+
+	apiGroup := e.Group("/api")
+
+	userGroup := apiGroup.Group("/user")
+	userGroup.POST("/login/", user.Login)
+	userGroup.POST("/register/", user.Register)
+	userGroup.POST("/", user.CreateUser, authMiddleware)
+
+	urlGroup := apiGroup.Group("/url", authMiddleware)
+	urlGroup.POST("/", url.Create)
+	urlGroup.GET("/", url.List)
+
 	if configuration.CurrentConfig.RunServer {
-		log.Logger.Info("Starting WebServer")
+		log.Logger.Info("Starting WebServer", zap.String("listen-address", configuration.CurrentConfig.ListenAddress))
 		log.Logger.Fatal(
 			e.Start(configuration.CurrentConfig.ListenAddress).Error(),
 			zap.String("listen-address", configuration.CurrentConfig.ListenAddress),

@@ -11,14 +11,15 @@ var random *rand.Rand
 func Generate(id int64, timestamp time.Time) string {
 	i := timestamp.UTC().UnixNano() + id
 	random.Seed(i)
-	return randomString(i)
+	return randomString()
 }
 
-func randomString(seed int64) string {
+func randomString() string {
 	n, _ := strconv.ParseInt(
 		strconv.Itoa(
 			randInt(
-				random.Intn(int(seed))),
+				10000,
+			),
 		),
 		10,
 		64,

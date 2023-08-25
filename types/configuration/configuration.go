@@ -15,6 +15,7 @@ type Config struct {
 	DatabaseMaxIdleConnections    int           `validate:"required"`
 	DatabaseMaxOpenConnections    int           `validate:"required"`
 	DatabaseMaxConnectionLifetime time.Duration `validate:"required"`
+	JWTSecret                     string        `validate:"required"`
 }
 
 var CurrentConfig *Config
