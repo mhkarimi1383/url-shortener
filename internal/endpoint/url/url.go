@@ -21,7 +21,7 @@ const (
 
 func Redirect(c echo.Context) error {
 	u := databasemodels.Url{
-		Shortand: c.Param("shortcode"),
+		ShortCode: c.Param("shortcode"),
 	}
 	database.Engine.Get(&u)
 	return c.Redirect(http.StatusTemporaryRedirect, u.FullUrl)

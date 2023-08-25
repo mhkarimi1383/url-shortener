@@ -17,7 +17,7 @@ func CreateURL(r *requestschemas.CreateURL, creator databasemodels.User) (string
 		return "", err
 	}
 	shortant := shortcode.Generate(u.Id, u.CreatedAt)
-	u.Shortand = shortant
+	u.ShortCode = shortant
 	if _, err := database.Engine.Update(&u); err != nil {
 		return "", err
 	}
