@@ -15,3 +15,7 @@ type CreateUser struct {
 	Password string `validate:"required"`
 	Admin    bool
 }
+
+type ChangeUserPassword struct {
+	Password string `validate:"required"`
+}

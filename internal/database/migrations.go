@@ -45,7 +45,7 @@ func hashModel(s any) string {
 		f += "_" + t.Field(i).Type.Name()
 		xv, _ := t.Field(i).Tag.Lookup("xorm")
 		if xv != "" {
-			f += "_" + xv
+			f += "_" + strings.ReplaceAll(xv, " ", "-")
 		}
 		fieldList = append(fieldList, f)
 	}

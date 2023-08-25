@@ -10,7 +10,6 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 
 	"github.com/mhkarimi1383/url-shortener/internal/database"
-	"github.com/mhkarimi1383/url-shortener/internal/log"
 	"github.com/mhkarimi1383/url-shortener/types/configuration"
 	"github.com/mhkarimi1383/url-shortener/types/database_models"
 	"github.com/mhkarimi1383/url-shortener/types/request_schemas"
@@ -19,6 +18,7 @@ import (
 var (
 	ErrInvalidUsernameOrPassword = errors.New("wrong Username or Password")
 	ErrUserAlreadyExist          = errors.New("user already exist")
+	ErrUserDoesNotExist          = errors.New("user does not exist")
 )
 
 func Login(info *requestschemas.Login) (*databasemodels.User, string, error) {
@@ -55,14 +55,27 @@ func CreateUser(info *requestschemas.Register, admin bool) error {
 	if has {
 		return ErrUserAlreadyExist
 	}
-	log.Logger.Info("Encrypting Password")
 	encryptedPassword, err := bcrypt.GenerateFromPassword([]byte(info.Password), 10) // 10 is also default
 	if err != nil {
 		return err
 	}
 	user.Password = string(encryptedPassword)
 	user.Admin = admin
-	log.Logger.Info("Adding to db")
 	_, err = database.Engine.Insert(&user)
+	return err
+}
+
+func ChangeUserPassword(info *requestschemas.ChangeUserPassword, userId int64) error {
+	user := databasemodels.User{Id: userId}
+	has, _ := database.Engine.Get(&user)
+	if !has {
+		return ErrUserDoesNotExist
+	}
+	encryptedPassword, err := bcrypt.GenerateFromPassword([]byte(info.Password), 10) // 10 is also default
+	if err != nil {
+		return err
+	}
+	user.Password = string(encryptedPassword)
+	_, err = database.Engine.Update(&user)
 	return err
 }

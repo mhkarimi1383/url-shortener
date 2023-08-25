@@ -18,6 +18,7 @@ package cmd
 
 import (
 	"os"
+	"strconv"
 
 	"github.com/brpaz/echozap"
 	"github.com/go-playground/validator/v10"
@@ -35,6 +36,7 @@ import (
 	"github.com/mhkarimi1383/url-shortener/internal/log"
 	ivalidator "github.com/mhkarimi1383/url-shortener/internal/validator"
 	"github.com/mhkarimi1383/url-shortener/types/configuration"
+	"github.com/mhkarimi1383/url-shortener/types/database_models"
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -112,6 +114,33 @@ func start(_ *cobra.Command, _ []string) {
 		SigningKey: []byte(configuration.CurrentConfig.JWTSecret),
 	})
 
+	checkUserExists := func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			token := c.Get("user").(*jwt.Token)
+			strID := token.Claims.(*jwt.RegisteredClaims).ID
+			id, err := strconv.ParseInt(strID, 10, 0)
+			if err != nil {
+				return err
+			}
+			user := databasemodels.User{Id: id}
+			if has, _ := database.Engine.Get(&user); !has {
+				return echo.ErrForbidden
+			}
+			c.Set("userInfo", user)
+			return next(c)
+		}
+	}
+
+	checkUserAdmin := func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			user := c.Get("userInfo").(databasemodels.User)
+			if !user.Admin {
+				return echo.ErrForbidden
+			}
+			return next(c)
+		}
+	}
+
 	e.Use(echozap.ZapLogger(log.Logger))
 	e.Use(middleware.Recover())
 	e.Validator = ivalidator.EchoValidator
@@ -119,15 +148,17 @@ func start(_ *cobra.Command, _ []string) {
 	e.HideBanner = true
 
 	e.Any("/:shortcode", url.Redirect)
+	e.Any("/:shortcode/", url.Redirect)
 
 	apiGroup := e.Group("/api")
 
 	userGroup := apiGroup.Group("/user")
 	userGroup.POST("/login/", user.Login)
 	userGroup.POST("/register/", user.Register)
-	userGroup.POST("/", user.CreateUser, authMiddleware)
+	userGroup.PUT("/change-password/:"+user.IdParamName+"/", user.ChangePassword, authMiddleware, checkUserExists, checkUserAdmin)
+	userGroup.POST("/", user.Create, authMiddleware, checkUserExists, checkUserAdmin)
 
-	urlGroup := apiGroup.Group("/url", authMiddleware)
+	urlGroup := apiGroup.Group("/url", authMiddleware, checkUserExists)
 	urlGroup.POST("/", url.Create)
 	urlGroup.GET("/", url.List)
 

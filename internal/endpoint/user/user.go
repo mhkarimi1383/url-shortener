@@ -3,6 +3,7 @@ package user
 import (
 	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/labstack/echo/v4"
 
@@ -15,6 +16,7 @@ import (
 
 const (
 	firstUserAlreadyExist = "First User already exist"
+	IdParamName           = "id"
 )
 
 func Login(c echo.Context) error {
@@ -50,7 +52,7 @@ func Register(c echo.Context) error {
 
 	usr := new(databasemodels.User)
 	total, err := database.Engine.Count(usr)
-  if err != nil {
+	if err != nil {
 		return err
 	}
 	if total > 0 {
@@ -62,19 +64,19 @@ func Register(c echo.Context) error {
 	return c.NoContent(http.StatusCreated)
 }
 
-func CreateUser(c echo.Context) error {
+func Create(c echo.Context) error {
 	r := new(requestschemas.CreateUser)
 	if err := c.Bind(r); err != nil {
 		return err
 	}
-  if err := c.Validate(r); err != nil {
+	if err := c.Validate(r); err != nil {
 		return err
 	}
 
 	if err := controller.CreateUser(
 		&requestschemas.Register{
-		  Username: r.Username,
-		  Password: r.Password,
+			Username: r.Username,
+			Password: r.Password,
 		},
 		r.Admin,
 	); err != nil {
@@ -84,4 +86,28 @@ func CreateUser(c echo.Context) error {
 		return err
 	}
 	return c.NoContent(http.StatusCreated)
+}
+
+func ChangePassword(c echo.Context) error {
+	r := new(requestschemas.ChangeUserPassword)
+	if err := c.Bind(r); err != nil {
+		return err
+	}
+	if err := c.Validate(r); err != nil {
+		return err
+	}
+
+	idStr := c.Param(IdParamName)
+	id, err := strconv.ParseInt(idStr, 10, 0)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	if err := controller.ChangeUserPassword(r, id); err != nil {
+		if errors.Is(err, controller.ErrUserDoesNotExist) {
+			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+		}
+		return err
+	}
+	return c.NoContent(http.StatusNoContent)
 }

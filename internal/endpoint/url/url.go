@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 
 	"github.com/mhkarimi1383/url-shortener/internal/controller"
@@ -28,12 +27,7 @@ func Redirect(c echo.Context) error {
 }
 
 func Create(c echo.Context) error {
-	userToken := c.Get("user").(*jwt.Token)
-	strID := userToken.Claims.(*jwt.RegisteredClaims).ID
-	id, err := strconv.ParseInt(strID, 10, 0)
-	if err != nil {
-		return err
-	}
+	user := c.Get("userInfo").(databasemodels.User)
 
 	r := new(requestschemas.CreateURL)
 	if err := c.Bind(r); err != nil {
@@ -43,29 +37,18 @@ func Create(c echo.Context) error {
 		return err
 	}
 
-	user := databasemodels.User{
-		Id: id,
-	}
-	if _, err := database.Engine.Get(&user); err != nil {
-		return err
-	}
 	shortcode, err := controller.CreateURL(r, user)
 	if err != nil {
 		return err
 	}
 	return c.JSON(http.StatusCreated, responseschemas.Create{
 		ShortCode: shortcode,
-		ShortURL:  c.Scheme() + "://" + c.Request().Host + "/" + shortcode,
+		ShortUrl:  c.Scheme() + "://" + c.Request().Host + "/" + shortcode,
 	})
 }
 
 func List(c echo.Context) error {
-	userToken := c.Get("user").(*jwt.Token)
-	strID := userToken.Claims.(*jwt.RegisteredClaims).ID
-	id, err := strconv.ParseInt(strID, 10, 0)
-	if err != nil {
-		return err
-	}
+	user := c.Get("userInfo").(databasemodels.User)
 
 	limitStr := c.QueryParam(limitQueryParamName)
 	if limitStr == "" {
@@ -85,9 +68,19 @@ func List(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	list, err := controller.ListURLs(id, limit, offset)
+	var resp responseschemas.ListUrls
+
+	list, err := controller.ListUrls(user.Id, limit, offset)
 	if err != nil {
 		return err
 	}
-	return c.JSON(http.StatusOK, list)
+
+	for _, item := range list {
+		resp = append(resp, responseschemas.Url{
+			Url:      item,
+			ShortUrl: c.Scheme() + "://" + c.Request().Host + "/" + item.ShortCode,
+		})
+	}
+
+	return c.JSON(http.StatusOK, resp)
 }

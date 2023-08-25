@@ -4,7 +4,6 @@ import (
 	"github.com/mhkarimi1383/url-shortener/internal/database"
 	"github.com/mhkarimi1383/url-shortener/types/database_models"
 	"github.com/mhkarimi1383/url-shortener/types/request_schemas"
-	"github.com/mhkarimi1383/url-shortener/types/response_schemas"
 	"github.com/mhkarimi1383/url-shortener/utils/shortcode"
 )
 
@@ -24,7 +23,7 @@ func CreateURL(r *requestschemas.CreateURL, creator databasemodels.User) (string
 	return shortant, nil
 }
 
-func ListURLs(userID int64, limit, offset int) (responseschemas.ListURLs, error) {
+func ListUrls(userID int64, limit, offset int) ([]databasemodels.Url, error) {
 	user := databasemodels.User{
 		Id: userID,
 	}
