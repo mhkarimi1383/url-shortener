@@ -14,15 +14,18 @@ import (
 )
 
 const (
-	limitQueryParamName  = "limit"
-	offsetQueryParamName = "offset"
+	limitQueryParamName  = "Limit"
+	offsetQueryParamName = "Offset"
+	ShortCodeParamName   = "shortCode"
 )
 
 func Redirect(c echo.Context) error {
 	u := databasemodels.Url{
-		ShortCode: c.Param("shortcode"),
+		ShortCode: c.Param(ShortCodeParamName),
 	}
-	database.Engine.Get(&u)
+	if has, _ := database.Engine.Get(&u); !has {
+		return echo.ErrNotFound
+	}
 	return c.Redirect(http.StatusTemporaryRedirect, u.FullUrl)
 }
 

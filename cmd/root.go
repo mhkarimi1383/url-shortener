@@ -143,12 +143,13 @@ func start(_ *cobra.Command, _ []string) {
 
 	e.Use(echozap.ZapLogger(log.Logger))
 	e.Use(middleware.Recover())
+	e.Use(middleware.RequestID())
 	e.Validator = ivalidator.EchoValidator
 	e.HidePort = true
 	e.HideBanner = true
 
-	e.Any("/:shortcode", url.Redirect)
-	e.Any("/:shortcode/", url.Redirect)
+	e.Any("/"+url.ShortCodeParamName, url.Redirect)
+	e.Any("/"+url.ShortCodeParamName+"/", url.Redirect)
 
 	apiGroup := e.Group("/api")
 

@@ -16,7 +16,7 @@ import (
 
 const (
 	firstUserAlreadyExist = "First User already exist"
-	IdParamName           = "id"
+	IdParamName           = "Id"
 )
 
 func Login(c echo.Context) error {
