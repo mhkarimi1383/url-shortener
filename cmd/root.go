@@ -19,6 +19,7 @@ package cmd
 import (
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/brpaz/echozap"
 	"github.com/go-playground/validator/v10"
@@ -67,7 +68,7 @@ func init() {
 	rootCmd.PersistentFlags().IntVar(&cfg.DatabaseMaxIdleConnections, "database-max-idle-connections", 4, "Number of maximum idle connections to database used by connection pool")
 	rootCmd.PersistentFlags().IntVar(&cfg.DatabaseMaxOpenConnections, "database-max-open-connections", 10, "Number of maximum open connections to database used by connection pool")
 	rootCmd.PersistentFlags().
-		DurationVar(&cfg.DatabaseMaxConnectionLifetime, "database-max-connection-lifetime", 300, "Maximum lifetime for database connections in second used by connection pool")
+		DurationVar(&cfg.DatabaseMaxConnectionLifetime, "database-max-connection-lifetime", 300*time.Second, "Maximum lifetime for database connections in second used by connection pool")
 	rootCmd.PersistentFlags().StringVar(&cfg.DatabaseEngine, "database-engine", "sqlite", "The engine of database")
 	rootCmd.PersistentFlags().StringVar(&cfg.DatabaseConnectionString, "database-connection-string", "./database.sqlite3", "Connection string of database")
 	rootCmd.PersistentFlags().StringVar(&cfg.JWTSecret, "jwt-secret", "superdupersecret", "jwt secret to sign tokens with, strongly recommended to change")
