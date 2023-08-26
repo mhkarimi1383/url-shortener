@@ -162,9 +162,10 @@ func start(_ *cobra.Command, _ []string) {
 	urlGroup := apiGroup.Group("/url", authMiddleware, checkUserExists)
 	urlGroup.POST("/", url.Create)
 	urlGroup.GET("/", url.List)
+	urlGroup.DELETE("/:"+url.IdParamName+"/", url.Delete)
 
 	if configuration.CurrentConfig.RunServer {
-		log.Logger.Info("Starting WebServer", zap.String("listen-address", configuration.CurrentConfig.ListenAddress))
+		log.Logger.Info("WebServer Started", zap.String("listen-address", configuration.CurrentConfig.ListenAddress))
 		log.Logger.Fatal(
 			e.Start(configuration.CurrentConfig.ListenAddress).Error(),
 			zap.String("listen-address", configuration.CurrentConfig.ListenAddress),

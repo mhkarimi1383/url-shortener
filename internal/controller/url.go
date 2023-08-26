@@ -7,7 +7,7 @@ import (
 	"github.com/mhkarimi1383/url-shortener/utils/shortcode"
 )
 
-func CreateURL(r *requestschemas.CreateURL, creator databasemodels.User) (string, error) {
+func CreateUrl(r *requestschemas.CreateURL, creator databasemodels.User) (string, error) {
 	u := databasemodels.Url{
 		FullUrl: r.FullUrl,
 		Creator: creator,
@@ -21,6 +21,20 @@ func CreateURL(r *requestschemas.CreateURL, creator databasemodels.User) (string
 		return "", err
 	}
 	return shortant, nil
+}
+
+func DeleteUrl(id int64, user databasemodels.User) error {
+	if user.Admin {
+		_, err := database.Engine.Delete(&databasemodels.Url{
+			Id: id,
+		})
+		return err
+	}
+	_, err := database.Engine.Delete(&databasemodels.Url{
+		Id:      id,
+		Creator: user,
+	})
+	return err
 }
 
 func ListUrls(userID int64, limit, offset int) ([]databasemodels.Url, error) {

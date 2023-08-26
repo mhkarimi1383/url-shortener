@@ -17,6 +17,7 @@ const (
 	limitQueryParamName  = "Limit"
 	offsetQueryParamName = "Offset"
 	ShortCodeParamName   = "shortCode"
+	IdParamName          = "Id"
 )
 
 func Redirect(c echo.Context) error {
@@ -40,7 +41,7 @@ func Create(c echo.Context) error {
 		return err
 	}
 
-	shortcode, err := controller.CreateURL(r, user)
+	shortcode, err := controller.CreateUrl(r, user)
 	if err != nil {
 		return err
 	}
@@ -48,6 +49,16 @@ func Create(c echo.Context) error {
 		ShortCode: shortcode,
 		ShortUrl:  c.Scheme() + "://" + c.Request().Host + "/" + shortcode,
 	})
+}
+
+func Delete(c echo.Context) error {
+	user := c.Get("userInfo").(databasemodels.User)
+
+	id, err := strconv.ParseInt((c.Param(IdParamName)), 10, 0)
+	if err != nil {
+		return err
+	}
+	return controller.DeleteUrl(id, user)
 }
 
 func List(c echo.Context) error {
