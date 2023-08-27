@@ -40,15 +40,20 @@ import (
 	"github.com/mhkarimi1383/url-shortener/types/database_models"
 )
 
-// rootCmd represents the base command when called without any subcommands
-var rootCmd = &cobra.Command{
-	Use:   "url-shortener",
-	Short: "Simple and minimalism URL Shortener",
-	Long:  ``,
-	Run:   start,
-}
+var (
+	// rootCmd represents the base command when called without any subcommands
+	rootCmd = &cobra.Command{
+		Use:   "url-shortener",
+		Short: "Simple and minimalism URL Shortener",
+		Long:  ``,
+		Run:   start,
+	}
+	cfg configuration.Config
+)
 
-var cfg configuration.Config
+const (
+	UserInfoContextVar = "userInfo"
+)
 
 func Execute() {
 	if invalid := flagutil.SetFlagsFromEnv(rootCmd.PersistentFlags(), "USH"); invalid.String != "" {
@@ -118,25 +123,25 @@ func start(_ *cobra.Command, _ []string) {
 
 	checkUserExists := func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			token := c.Get("user").(*jwt.Token)
+			token := c.Get(user.UserTokenContextVar).(*jwt.Token)
 			strID := token.Claims.(*jwt.RegisteredClaims).ID
 			id, err := strconv.ParseInt(strID, 10, 0)
 			if err != nil {
 				return err
 			}
-			user := databasemodels.User{Id: id}
-			if has, _ := database.Engine.Get(&user); !has {
+			usr := databasemodels.User{Id: id}
+			if has, _ := database.Engine.Get(&usr); !has {
 				return echo.ErrForbidden
 			}
-			c.Set("userInfo", user)
+			c.Set(user.UserInfoContextVar, usr)
 			return next(c)
 		}
 	}
 
 	checkUserAdmin := func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			user := c.Get("userInfo").(databasemodels.User)
-			if !user.Admin {
+			usr := c.Get(user.UserInfoContextVar).(databasemodels.User)
+			if !usr.Admin {
 				return echo.ErrForbidden
 			}
 			return next(c)

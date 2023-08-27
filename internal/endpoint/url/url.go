@@ -9,6 +9,7 @@ import (
 
 	"github.com/mhkarimi1383/url-shortener/internal/controller"
 	"github.com/mhkarimi1383/url-shortener/internal/database"
+	"github.com/mhkarimi1383/url-shortener/internal/endpoint/user"
 	"github.com/mhkarimi1383/url-shortener/types/configuration"
 	"github.com/mhkarimi1383/url-shortener/types/database_models"
 	"github.com/mhkarimi1383/url-shortener/types/request_schemas"
@@ -42,7 +43,7 @@ func Redirect(c echo.Context) error {
 }
 
 func Create(c echo.Context) error {
-	user := c.Get("userInfo").(databasemodels.User)
+	user := c.Get(user.UserInfoContextVar).(databasemodels.User)
 
 	r := new(requestschemas.CreateURL)
 	if err := c.Bind(r); err != nil {
