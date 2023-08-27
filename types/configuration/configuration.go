@@ -16,6 +16,7 @@ type Config struct {
 	DatabaseMaxOpenConnections    int           `validate:"required"`
 	DatabaseMaxConnectionLifetime time.Duration `validate:"required"`
 	JWTSecret                     string        `validate:"required"`
+	AddRefererQueryParam          bool          `validate:""`
 }
 
 var CurrentConfig *Config

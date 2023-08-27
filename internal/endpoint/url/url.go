@@ -5,9 +5,11 @@ import (
 	"strconv"
 
 	"github.com/labstack/echo/v4"
+	"net/url"
 
 	"github.com/mhkarimi1383/url-shortener/internal/controller"
 	"github.com/mhkarimi1383/url-shortener/internal/database"
+	"github.com/mhkarimi1383/url-shortener/types/configuration"
 	"github.com/mhkarimi1383/url-shortener/types/database_models"
 	"github.com/mhkarimi1383/url-shortener/types/request_schemas"
 	"github.com/mhkarimi1383/url-shortener/types/response_schemas"
@@ -18,6 +20,7 @@ const (
 	offsetQueryParamName = "Offset"
 	ShortCodeParamName   = "shortCode"
 	IdParamName          = "Id"
+	refererQueryParam    = "referer"
 )
 
 func Redirect(c echo.Context) error {
@@ -27,7 +30,15 @@ func Redirect(c echo.Context) error {
 	if has, _ := database.Engine.Get(&u); !has {
 		return echo.ErrNotFound
 	}
-	return c.Redirect(http.StatusTemporaryRedirect, u.FullUrl)
+	target := u.FullUrl
+	if configuration.CurrentConfig.AddRefererQueryParam {
+		url, _ := url.Parse(target)
+		q := url.Query()
+		q.Add(refererQueryParam, c.Scheme()+"://"+c.Request().Host+c.Request().URL.Path)
+		url.RawQuery = q.Encode()
+		target = url.String()
+	}
+	return c.Redirect(http.StatusTemporaryRedirect, target)
 }
 
 func Create(c echo.Context) error {

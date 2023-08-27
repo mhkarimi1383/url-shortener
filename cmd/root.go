@@ -72,6 +72,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&cfg.DatabaseEngine, "database-engine", "sqlite", "The engine of database")
 	rootCmd.PersistentFlags().StringVar(&cfg.DatabaseConnectionString, "database-connection-string", "./database.sqlite3", "Connection string of database")
 	rootCmd.PersistentFlags().StringVar(&cfg.JWTSecret, "jwt-secret", "superdupersecret", "jwt secret to sign tokens with, strongly recommended to change")
+	rootCmd.PersistentFlags().BoolVar(&cfg.AddRefererQueryParam, "add-referer-query-param", true, "add 'referer' query param to redirect url or not")
 }
 
 func start(_ *cobra.Command, _ []string) {
@@ -149,8 +150,8 @@ func start(_ *cobra.Command, _ []string) {
 	e.HidePort = true
 	e.HideBanner = true
 
-	e.Any("/"+url.ShortCodeParamName, url.Redirect)
-	e.Any("/"+url.ShortCodeParamName+"/", url.Redirect)
+	e.Any("/:"+url.ShortCodeParamName, url.Redirect)
+	e.Any("/:"+url.ShortCodeParamName+"/", url.Redirect)
 
 	apiGroup := e.Group("/api")
 
