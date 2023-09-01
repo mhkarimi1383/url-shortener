@@ -4,6 +4,8 @@ import (
 	"math/rand"
 	"strconv"
 	"time"
+
+	"github.com/mhkarimi1383/url-shortener/types/configuration"
 )
 
 var random *rand.Rand
@@ -18,7 +20,7 @@ func randomString(id int64) string {
 	n, _ := strconv.ParseInt(
 		strconv.Itoa(
 			randInt(
-				10000,
+				configuration.CurrentConfig.RandomGeneratorMax,
 			),
 		)+strconv.FormatInt(id, 10),
 		10,
