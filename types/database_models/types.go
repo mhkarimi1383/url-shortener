@@ -13,6 +13,17 @@ type User struct {
 	DeletedAt time.Time `xorm:"deleted"`
 }
 
+type Entity struct {
+	Id          int64
+	Name        string    `xorm:"not null unique index"`
+	Description string    `xorm:"null"`
+	CreatedAt   time.Time `xorm:"created"`
+	UpdatedAt   time.Time `xorm:"updated"`
+	Version     int64     `xorm:"version"`
+	Creator     User      `xorm:"bigint"`
+	DeletedAt   time.Time `xorm:"deleted"`
+}
+
 type Url struct {
 	Id        int64
 	FullUrl   string    `xorm:"not null index"`
@@ -22,4 +33,5 @@ type Url struct {
 	Version   int64     `xorm:"version"`
 	Creator   User      `xorm:"bigint"`
 	DeletedAt time.Time `xorm:"deleted"`
+	Entity    Entity    `xorm:"null bigint"`
 }

@@ -12,13 +12,7 @@ import (
 	"github.com/mhkarimi1383/url-shortener/types/database_models"
 	"github.com/mhkarimi1383/url-shortener/types/request_schemas"
 	"github.com/mhkarimi1383/url-shortener/types/response_schemas"
-)
-
-const (
-	firstUserAlreadyExist = "First User already exist"
-	IdParamName           = "Id"
-	UserInfoContextVar    = "userInfo"
-	UserTokenContextVar   = "user"
+	"github.com/mhkarimi1383/url-shortener/constrains"
 )
 
 func Login(c echo.Context) error {
@@ -58,7 +52,7 @@ func Register(c echo.Context) error {
 		return err
 	}
 	if total > 0 {
-		return echo.NewHTTPError(http.StatusConflict, firstUserAlreadyExist)
+		return echo.NewHTTPError(http.StatusConflict, constrains.FirstUserAlreadyExist)
 	}
 	if err := controller.CreateUser(r, true); err != nil {
 		return err
@@ -99,7 +93,7 @@ func ChangePassword(c echo.Context) error {
 		return err
 	}
 
-	idStr := c.Param(IdParamName)
+	idStr := c.Param(constrains.IdParamName)
 	id, err := strconv.ParseInt(idStr, 10, 0)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())

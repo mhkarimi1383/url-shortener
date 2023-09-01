@@ -7,10 +7,33 @@ import (
 	"github.com/mhkarimi1383/url-shortener/utils/shortcode"
 )
 
+func CreateEntity(r *requestschemas.CreateEntity, creator databasemodels.User) error {
+	e := databasemodels.Entity{
+		Name:        r.Name,
+		Description: r.Description,
+		Creator:     creator,
+	}
+
+	if _, err := database.Engine.Insert(&e); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func CreateUrl(r *requestschemas.CreateURL, creator databasemodels.User) (string, error) {
+	entity := databasemodels.Entity{}
+	if r.Entity != 0 {
+		entity.Id = r.Entity
+		_, err := database.Engine.Get(&entity)
+		if err != nil {
+			return "", err
+		}
+	}
 	u := databasemodels.Url{
 		FullUrl: r.FullUrl,
 		Creator: creator,
+		Entity:  entity,
 	}
 	if _, err := database.Engine.Insert(&u); err != nil {
 		return "", err
@@ -37,13 +60,7 @@ func DeleteUrl(id int64, user databasemodels.User) error {
 	return err
 }
 
-func ListUrls(userID int64, limit, offset int) ([]databasemodels.Url, error) {
-	user := databasemodels.User{
-		Id: userID,
-	}
-	if _, err := database.Engine.Get(&user); err != nil {
-		return nil, err
-	}
+func ListUrls(user databasemodels.User, limit, offset int) ([]databasemodels.Url, error) {
 	var urls []databasemodels.Url
 	if user.Admin {
 		if err := database.Engine.Limit(limit, offset).Find(&urls); err != nil {
@@ -55,4 +72,34 @@ func ListUrls(userID int64, limit, offset int) ([]databasemodels.Url, error) {
 		return nil, err
 	}
 	return urls, nil
+}
+
+func ListEntities(limit, offset int) ([]databasemodels.Entity, error) {
+	var entities []databasemodels.Entity
+	if err := database.Engine.Limit(limit, offset).Find(&entities); err != nil {
+		return nil, err
+	}
+	return entities, nil
+}
+
+func DeleteEntity(id int64) error {
+	entity := databasemodels.Entity{
+		Id: id,
+	}
+	if _, err := database.Engine.Get(&entity); err != nil {
+		return err
+	}
+
+	if _, err := database.Engine.Delete(&databasemodels.Url{
+		Entity: entity,
+	}); err != nil {
+		return err
+	}
+
+	if _, err := database.Engine.Delete(&databasemodels.Entity{
+		Id: id,
+	}); err != nil {
+		return err
+	}
+	return nil
 }

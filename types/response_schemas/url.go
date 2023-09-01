@@ -13,3 +13,5 @@ type Url struct {
 }
 
 type ListUrls []Url
+
+type ListEntities []databasemodels.Entity

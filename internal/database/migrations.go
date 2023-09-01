@@ -2,38 +2,46 @@ package database
 
 import (
 	"reflect"
-	"sort"
 	"strings"
 
-	"github.com/mhkarimi1383/url-shortener/types/database_models"
+	"golang.org/x/exp/slices"
 	"xorm.io/xorm"
 	"xorm.io/xorm/migrate"
+
+	"github.com/mhkarimi1383/url-shortener/types/database_models"
 )
 
 // IMPORTANT: We do not support removal of fields in models.!
 
-var (
-	migrations []*migrate.Migration = []*migrate.Migration{
-		{
-			ID: hashModel(databasemodels.User{}),
-			Migrate: func(e *xorm.Engine) error {
-				return e.Sync(&databasemodels.User{})
-			},
-			Rollback: func(e *xorm.Engine) error {
-				return e.DropTables(&databasemodels.User{})
-			},
+var migrations []*migrate.Migration = []*migrate.Migration{
+	{
+		ID: hashModel(databasemodels.User{}),
+		Migrate: func(e *xorm.Engine) error {
+			return e.Sync(&databasemodels.User{})
 		},
-		{
-			ID: hashModel(databasemodels.Url{}),
-			Migrate: func(e *xorm.Engine) error {
-				return e.Sync(&databasemodels.Url{})
-			},
-			Rollback: func(e *xorm.Engine) error {
-				return e.DropTables(&databasemodels.Url{})
-			},
+		Rollback: func(e *xorm.Engine) error {
+			return e.DropTables(&databasemodels.User{})
 		},
-	}
-)
+	},
+	{
+		ID: hashModel(databasemodels.Url{}),
+		Migrate: func(e *xorm.Engine) error {
+			return e.Sync(&databasemodels.Url{})
+		},
+		Rollback: func(e *xorm.Engine) error {
+			return e.DropTables(&databasemodels.Url{})
+		},
+	},
+	{
+		ID: hashModel(databasemodels.Entity{}),
+		Migrate: func(e *xorm.Engine) error {
+			return e.Sync(&databasemodels.Entity{})
+		},
+		Rollback: func(e *xorm.Engine) error {
+			return e.DropTables(&databasemodels.Entity{})
+		},
+	},
+}
 
 func hashModel(s any) string {
 	v := reflect.ValueOf(s)
@@ -49,7 +57,7 @@ func hashModel(s any) string {
 		}
 		fieldList = append(fieldList, f)
 	}
-	sort.Sort(sort.StringSlice(fieldList))
+	slices.Sort(fieldList)
 	return strings.Join(fieldList, "__")
 }
 

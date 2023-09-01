@@ -13,8 +13,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
-*/
-package cmd
+*/package cmd
 
 import (
 	"os"
@@ -30,7 +29,9 @@ import (
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 
+	"github.com/mhkarimi1383/url-shortener/constrains"
 	"github.com/mhkarimi1383/url-shortener/internal/database"
+	"github.com/mhkarimi1383/url-shortener/internal/endpoint/entity"
 	"github.com/mhkarimi1383/url-shortener/internal/endpoint/url"
 	"github.com/mhkarimi1383/url-shortener/internal/endpoint/user"
 	"github.com/mhkarimi1383/url-shortener/internal/flagutil"
@@ -49,10 +50,6 @@ var (
 		Run:   start,
 	}
 	cfg configuration.Config
-)
-
-const (
-	UserInfoContextVar = "userInfo"
 )
 
 func Execute() {
@@ -118,12 +115,13 @@ func start(_ *cobra.Command, _ []string) {
 		NewClaimsFunc: func(c echo.Context) jwt.Claims {
 			return new(jwt.RegisteredClaims)
 		},
+		ContextKey: constrains.UserTokenContextVar,
 		SigningKey: []byte(configuration.CurrentConfig.JWTSecret),
 	})
 
 	checkUserExists := func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			token := c.Get(user.UserTokenContextVar).(*jwt.Token)
+			token := c.Get(constrains.UserTokenContextVar).(*jwt.Token)
 			strID := token.Claims.(*jwt.RegisteredClaims).ID
 			id, err := strconv.ParseInt(strID, 10, 0)
 			if err != nil {
@@ -133,14 +131,14 @@ func start(_ *cobra.Command, _ []string) {
 			if has, _ := database.Engine.Get(&usr); !has {
 				return echo.ErrForbidden
 			}
-			c.Set(user.UserInfoContextVar, usr)
+			c.Set(constrains.UserInfoContextVar, usr)
 			return next(c)
 		}
 	}
 
 	checkUserAdmin := func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			usr := c.Get(user.UserInfoContextVar).(databasemodels.User)
+			usr := c.Get(constrains.UserInfoContextVar).(databasemodels.User)
 			if !usr.Admin {
 				return echo.ErrForbidden
 			}
@@ -155,21 +153,26 @@ func start(_ *cobra.Command, _ []string) {
 	e.HidePort = true
 	e.HideBanner = true
 
-	e.Any("/:"+url.ShortCodeParamName, url.Redirect)
-	e.Any("/:"+url.ShortCodeParamName+"/", url.Redirect)
+	e.Any("/:"+constrains.ShortCodeParamName, url.Redirect)
+	e.Any("/:"+constrains.ShortCodeParamName+"/", url.Redirect)
 
 	apiGroup := e.Group("/api")
 
 	userGroup := apiGroup.Group("/user")
 	userGroup.POST("/login/", user.Login)
 	userGroup.POST("/register/", user.Register)
-	userGroup.PUT("/change-password/:"+user.IdParamName+"/", user.ChangePassword, authMiddleware, checkUserExists, checkUserAdmin)
+	userGroup.PUT("/change-password/:"+constrains.IdParamName+"/", user.ChangePassword, authMiddleware, checkUserExists, checkUserAdmin)
 	userGroup.POST("/", user.Create, authMiddleware, checkUserExists, checkUserAdmin)
 
 	urlGroup := apiGroup.Group("/url", authMiddleware, checkUserExists)
 	urlGroup.POST("/", url.Create)
 	urlGroup.GET("/", url.List)
-	urlGroup.DELETE("/:"+url.IdParamName+"/", url.Delete)
+	urlGroup.DELETE("/:"+constrains.IdParamName+"/", url.Delete)
+
+	entityGroup := apiGroup.Group("/entity", authMiddleware, checkUserExists, checkUserAdmin)
+	entityGroup.GET("/", entity.List)
+	entityGroup.POST("/", entity.Create)
+	entityGroup.DELETE("/:"+constrains.IdParamName+"/", entity.Delete)
 
 	if configuration.CurrentConfig.RunServer {
 		log.Logger.Info("WebServer Started", zap.String("listen-address", configuration.CurrentConfig.ListenAddress))

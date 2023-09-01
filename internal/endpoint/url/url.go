@@ -2,31 +2,23 @@ package url
 
 import (
 	"net/http"
+	"net/url"
 	"strconv"
 
 	"github.com/labstack/echo/v4"
-	"net/url"
 
+	"github.com/mhkarimi1383/url-shortener/constrains"
 	"github.com/mhkarimi1383/url-shortener/internal/controller"
 	"github.com/mhkarimi1383/url-shortener/internal/database"
-	"github.com/mhkarimi1383/url-shortener/internal/endpoint/user"
 	"github.com/mhkarimi1383/url-shortener/types/configuration"
 	"github.com/mhkarimi1383/url-shortener/types/database_models"
 	"github.com/mhkarimi1383/url-shortener/types/request_schemas"
 	"github.com/mhkarimi1383/url-shortener/types/response_schemas"
 )
 
-const (
-	limitQueryParamName  = "Limit"
-	offsetQueryParamName = "Offset"
-	ShortCodeParamName   = "shortCode"
-	IdParamName          = "Id"
-	refererQueryParam    = "referer"
-)
-
 func Redirect(c echo.Context) error {
 	u := databasemodels.Url{
-		ShortCode: c.Param(ShortCodeParamName),
+		ShortCode: c.Param(constrains.ShortCodeParamName),
 	}
 	if has, _ := database.Engine.Get(&u); !has {
 		return echo.ErrNotFound
@@ -35,7 +27,7 @@ func Redirect(c echo.Context) error {
 	if configuration.CurrentConfig.AddRefererQueryParam {
 		url, _ := url.Parse(target)
 		q := url.Query()
-		q.Add(refererQueryParam, c.Scheme()+"://"+c.Request().Host+c.Request().URL.Path)
+		q.Add(constrains.RefererQueryParam, c.Scheme()+"://"+c.Request().Host+c.Request().URL.Path)
 		url.RawQuery = q.Encode()
 		target = url.String()
 	}
@@ -43,7 +35,7 @@ func Redirect(c echo.Context) error {
 }
 
 func Create(c echo.Context) error {
-	user := c.Get(user.UserInfoContextVar).(databasemodels.User)
+	user := c.Get(constrains.UserInfoContextVar).(databasemodels.User)
 
 	r := new(requestschemas.CreateURL)
 	if err := c.Bind(r); err != nil {
@@ -64,23 +56,26 @@ func Create(c echo.Context) error {
 }
 
 func Delete(c echo.Context) error {
-	user := c.Get("userInfo").(databasemodels.User)
+	user := c.Get(constrains.UserInfoContextVar).(databasemodels.User)
 
-	id, err := strconv.ParseInt((c.Param(IdParamName)), 10, 0)
+	id, err := strconv.ParseInt((c.Param(constrains.IdParamName)), 10, 0)
 	if err != nil {
 		return err
 	}
-	return controller.DeleteUrl(id, user)
+	if err := controller.DeleteUrl(id, user); err != nil {
+		return err
+	}
+	return c.NoContent(http.StatusNoContent)
 }
 
 func List(c echo.Context) error {
-	user := c.Get("userInfo").(databasemodels.User)
+	user := c.Get(constrains.UserInfoContextVar).(databasemodels.User)
 
-	limitStr := c.QueryParam(limitQueryParamName)
+	limitStr := c.QueryParam(constrains.LimitQueryParamName)
 	if limitStr == "" {
 		limitStr = "10"
 	}
-	offsetStr := c.QueryParam(offsetQueryParamName)
+	offsetStr := c.QueryParam(constrains.OffsetQueryParamName)
 	if offsetStr == "" {
 		offsetStr = "0"
 	}
@@ -96,7 +91,7 @@ func List(c echo.Context) error {
 
 	var resp responseschemas.ListUrls
 
-	list, err := controller.ListUrls(user.Id, limit, offset)
+	list, err := controller.ListUrls(user, limit, offset)
 	if err != nil {
 		return err
 	}
