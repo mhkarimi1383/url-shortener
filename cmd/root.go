@@ -23,7 +23,7 @@ import (
 	"github.com/brpaz/echozap"
 	"github.com/go-playground/validator/v10"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/labstack/echo-jwt/v4"
+	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/spf13/cobra"
@@ -38,7 +38,8 @@ import (
 	"github.com/mhkarimi1383/url-shortener/internal/log"
 	ivalidator "github.com/mhkarimi1383/url-shortener/internal/validator"
 	"github.com/mhkarimi1383/url-shortener/types/configuration"
-	"github.com/mhkarimi1383/url-shortener/types/database_models"
+	databasemodels "github.com/mhkarimi1383/url-shortener/types/database_models"
+	"github.com/mhkarimi1383/url-shortener/ui"
 )
 
 var (
@@ -75,7 +76,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&cfg.DatabaseConnectionString, "database-connection-string", "./database.sqlite3", "Connection string of database")
 	rootCmd.PersistentFlags().StringVar(&cfg.JWTSecret, "jwt-secret", "superdupersecret", "jwt secret to sign tokens with, strongly recommended to change")
 	rootCmd.PersistentFlags().BoolVar(&cfg.AddRefererQueryParam, "add-referer-query-param", true, "Add 'referer' query param to redirect url or not")
-  rootCmd.PersistentFlags().IntVar(&cfg.RandomGeneratorMax, "random-generator-max", 10000, "Generator will use this to generate shortcodes (higher value = bigger shortcodes), at least 10000 should be set")
+	rootCmd.PersistentFlags().IntVar(&cfg.RandomGeneratorMax, "random-generator-max", 10000, "Generator will use this to generate shortcodes (higher value = bigger shortcodes), at least 10000 should be set")
 }
 
 func start(_ *cobra.Command, _ []string) {
@@ -174,6 +175,11 @@ func start(_ *cobra.Command, _ []string) {
 	entityGroup.GET("/", entity.List)
 	entityGroup.POST("/", entity.Create)
 	entityGroup.DELETE("/:"+constrains.IdParamName+"/", entity.Delete)
+
+	uiGroup := e.Group("/ui")
+	uiGroup.StaticFS("/", ui.MainFS)
+	uiGroup.StaticFS("/assets/", ui.AssetsFS)
+	uiGroup.FileFS("/*.html", "index.html", ui.MainFS)
 
 	if configuration.CurrentConfig.RunServer {
 		log.Logger.Info("WebServer Started", zap.String("listen-address", configuration.CurrentConfig.ListenAddress))

@@ -12,7 +12,7 @@ Simple and minimalism URL Shortener
 
 ## Running project
 
-just run project with `--help` to see options and their env equvilant
+just run project with `--help` to see options and their env equivalent
 
 ## TODO
 
