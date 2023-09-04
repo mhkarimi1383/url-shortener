@@ -5,15 +5,3 @@
   width: 100%;
   font-weight: normal;
 }
-
-@media (min-width: 1024px) {
-  body {
-    display: flex;
-    place-items: top;
-  }
-
-  #app {
-    column-gap: 0;
-    row-gap: 0;
-  }
-}

@@ -100,12 +100,11 @@ watch(
 
 <template>
   <a-page-header style="border: 1px solid rgb(235, 237, 240);
-        height: 8vh;
+        height: max-content;
         margin-top: 0.25%;
         margin-bottom: 0.25%;
         margin-left: 0.25%;
-        margin-right: 0.25%;
-        " title="URL Shortener" :avatar="{ src: 'https://www.antdv.com/assets/logo.1ef800a8.svg' }"
+        margin-right: 0.25%;" title="URL Shortener" :avatar="{ src: 'https://www.antdv.com/assets/logo.1ef800a8.svg' }"
     sub-title="Simple and minimalism URL Shortener">
     <template #extra>
       <a-button href="https://github.com/mhkarimi1383/url-shortener">
@@ -115,12 +114,15 @@ watch(
       </a-button>
     </template>
   </a-page-header>
-  <a-layout style="height: 91vh;">
+  <a-layout>
     <a-layout-sider breakpoint="sm" theme="light" v-model:collapsed="state.collapsed" collapsible>
       <a-menu v-model:openKeys="state.openKeys" v-model:selectedKeys="state.selectedKeys" mode="vertical"
         :inline-collapsed="state.collapsed" :items="items"></a-menu>
     </a-layout-sider>
-    <a-layout style="margin-left: 3%; margin-top: 2%; margin-bottom: 2%; margin-right: 3%">
+    <a-layout style="margin-left: 3%;
+        margin-top: 2%;
+        margin-bottom: 2%;
+        margin-right: 3%">
       <a-layout-content>
         <RouterView />
       </a-layout-content>
