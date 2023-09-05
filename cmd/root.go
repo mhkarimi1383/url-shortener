@@ -55,7 +55,7 @@ var (
 
 func Execute() {
 	if invalid := flagutil.SetFlagsFromEnv(rootCmd.PersistentFlags(), "USH"); invalid.String != "" {
-		log.Logger.Panic("Invalid environemt values provided", invalid)
+		log.Logger.Panic("Invalid environment values provided", invalid)
 	}
 
 	err := rootCmd.Execute()
@@ -180,6 +180,8 @@ func start(_ *cobra.Command, _ []string) {
 	uiGroup.StaticFS("/", ui.MainFS)
 	uiGroup.StaticFS("/assets/", ui.AssetsFS)
 	uiGroup.FileFS("/*.html", "index.html", ui.MainFS)
+	e.FileFS("/favicon.ico", "favicon.ico", ui.MainFS)
+	e.FileFS("/ui/favicon.ico", "favicon.ico", ui.MainFS)
 
 	if configuration.CurrentConfig.RunServer {
 		log.Logger.Info("WebServer Started", zap.String("listen-address", configuration.CurrentConfig.ListenAddress))
