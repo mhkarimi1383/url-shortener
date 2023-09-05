@@ -1,9 +1,12 @@
+@import 'firacode/distr/fira_code.css';
+
 *,
 *::before,
 *::after {
   box-sizing: border-box;
   margin: 0;
   font-weight: normal;
+  font-family: 'Fira Code';
 }
 
 body {

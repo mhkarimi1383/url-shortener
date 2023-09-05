@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "ant-design-vue": "^4.0.2",
+    "firacode": "^6.2.0",
     "vue": "^3.3.4",
     "vue-router": "^4.2.4"
   },
