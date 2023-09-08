@@ -1,11 +1,10 @@
 import axios from 'axios';
 import type { AxiosError, AxiosResponse } from 'axios';
 import router from '@/router';
-import { message } from 'ant-design-vue';
 
 const apiBaseURL = '/api';
-export const loginStateCookie = "loginState";
-export const loginInfoCookie = "loginInfo";
+export const loginStateCookie = 'loginState';
+export const loginInfoCookie = 'loginInfo';
 
 export interface errorResponse {
   message: string;
@@ -33,16 +32,16 @@ export interface loginResponse {
 const client = axios.create({
   baseURL: apiBaseURL,
   headers: {
-    "Content-Type": "application/json",
+    'Content-Type': 'application/json',
   },
-})
+});
 
-const loginInterceptor = function (response: AxiosError) {
-  if (response.status === 401) {
-    message.error((response.response?.data as errorResponse).message)
-    router.push("/user/login");
+const loginInterceptor = function (error: AxiosError) {
+  if (error.status === 401) {
+    router.push('/user/login');
   }
-}
+  return Promise.reject(error);
+};
 
 export function setToken(token: string | null) {
   if (token === null) {
@@ -52,20 +51,38 @@ export function setToken(token: string | null) {
   }
 }
 
-client.interceptors.response.use(undefined, loginInterceptor)
+client.interceptors.response.use(undefined, loginInterceptor);
 
 export async function login(info: loginInfo): Promise<loginResponse | errorResponse> {
   let retVal = <loginResponse | errorResponse>{};
-  await client.post<loginResponse>("/user/login/", info).then(
-    (resp: AxiosResponse) => {
+  await client
+    .post<loginResponse>('/user/login/', info)
+    .then((resp: AxiosResponse) => {
       retVal = resp.data;
-    }
-  ).catch(
-    (err: AxiosError) => {
-      retVal = (err.response?.data as errorResponse) || <errorResponse>{
-        message: "Unknown error",
-      };
-    }
-  );
+    })
+    .catch((err: AxiosError) => {
+      retVal =
+        (err.response?.data as errorResponse) ||
+        <errorResponse>{
+          message: 'Unknown error',
+        };
+    });
+  return retVal;
+}
+
+export async function register(info: loginInfo): Promise<null | errorResponse> {
+  let retVal = <null | errorResponse>{};
+  await client
+    .post<null>('/user/register/', info)
+    .then((resp: AxiosResponse) => {
+      retVal = resp.data;
+    })
+    .catch((err: AxiosError) => {
+      retVal =
+        (err.response?.data as errorResponse) ||
+        <errorResponse>{
+          message: 'Unknown error',
+        };
+    });
   return retVal;
 }

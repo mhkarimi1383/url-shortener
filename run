@@ -2,6 +2,8 @@
 
 set -ex
 
+cd ui && npm run format && cd ..
+
 go mod download
 go generate ./...
 go run .

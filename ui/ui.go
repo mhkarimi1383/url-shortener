@@ -11,7 +11,7 @@ func init() {
 	os.Setenv("BASE_URL", "/ui")
 }
 
-//go:generate npm ci
+//go:generate npm ci --prefer-offline
 //go:generate npm run build
 
 var (

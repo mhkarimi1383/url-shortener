@@ -5,13 +5,13 @@ import type { VueCookies } from 'vue-cookies';
 import router from '@/router';
 import { message } from 'ant-design-vue';
 
-const $cookies = inject<VueCookies>("$cookies");
+const $cookies = inject<VueCookies>('$cookies');
 
-const finish = message.loading("Logging out");
+const finish = message.loading('Logging out');
 $cookies?.remove(loginInfoCookie);
 $cookies?.remove(loginStateCookie);
 setToken(null);
-router.push("/user/login");
 setTimeout(finish, 1000);
-message.success("Logged out");
+message.success('Logged out');
+router.push('/user/login').finally(() => location.reload());
 </script>

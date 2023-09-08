@@ -24,18 +24,24 @@
       </a-input-password>
     </a-form-item>
 
-    <a-form-item>
-      <a-form-item name="remember" no-style>
-        <a-checkbox v-model:checked="formState.remember"
-          >Remember me <small>(Username and Password will be saved as cookie)</small></a-checkbox
-        >
-      </a-form-item>
+    <a-form-item
+      label="Repeat Password"
+      name="repeatPassword"
+      :validate-status="!passwordsAreEqual && 'error'"
+      help="Passwords should be equal"
+      :rules="[{ required: true, message: 'Repeat your password!' }]"
+    >
+      <a-input-password v-model:value="formState.repeatPassword">
+        <template #prefix>
+          <LockOutlined />
+        </template>
+      </a-input-password>
     </a-form-item>
 
     <a-form-item>
-      <a-button :disabled="disabled" type="primary" html-type="submit"> Log in </a-button>
+      <a-button :disabled="disabled" type="primary" html-type="submit"> Register </a-button>
       Or
-      <RouterLink to="/user/register">register now!</RouterLink>
+      <RouterLink to="/user/login">login!</RouterLink>
     </a-form-item>
   </a-form>
 </template>
@@ -43,53 +49,39 @@
 <script lang="ts" setup>
 import { reactive, computed } from 'vue';
 import { UserOutlined, LockOutlined } from '@ant-design/icons-vue';
-import { inject } from 'vue';
-import type { VueCookies } from 'vue-cookies';
-import type { loginInfo, loginResponse, errorResponse } from '@/lib/api';
-import { login, loginStateCookie, loginInfoCookie, setToken } from '@/lib/api';
+import type { loginInfo, errorResponse } from '@/lib/api';
+import { register } from '@/lib/api';
 import { message } from 'ant-design-vue';
 import router from '@/router';
-
-const $cookies = inject<VueCookies>('$cookies');
 
 interface FormState {
   username: string;
   password: string;
-  remember: boolean;
+  repeatPassword: string;
 }
 
 const formState = reactive<FormState>({
   username: '',
   password: '',
-  remember: false,
+  repeatPassword: '',
 });
 
-if ($cookies?.get(loginInfoCookie)) {
-  const info = $cookies.get(loginInfoCookie) as loginInfo;
-  formState.remember = true;
-  formState.password = info.Password;
-  formState.username = info.Username;
-}
-
 async function onFinish(values: any) {
-  const finish = message.loading('Logging in');
+  const finish = message.loading('Signing up');
+
   const info = <loginInfo>{
     Password: values.password,
     Username: values.username,
   };
-  const resp = await login(info);
-  if ((resp as loginResponse).Token) {
-    if (values.remember === true) {
-      $cookies?.set(loginInfoCookie, info);
-    }
-    $cookies?.set(loginStateCookie, resp);
-    setTimeout(finish, 1000);
-    message.success(`Welcome, ${(resp as loginResponse).Info.Username}`);
-    setToken((resp as loginResponse).Token);
-    router.push('/').finally(() => location.reload());
-  } else {
+
+  const resp = await register(info);
+  if ((resp as errorResponse).message) {
     finish();
     message.error((resp as errorResponse).message);
+  } else {
+    setTimeout(finish, 1000);
+    message.success(`Now Login!`);
+    router.push('/user/login');
   }
 }
 
@@ -100,5 +92,8 @@ function onFinishFailed(errorInfo: any) {
 const disabled = computed(() => {
   return !(formState.username && formState.password);
 });
+
+const passwordsAreEqual = computed(() => {
+  return formState.password === formState.repeatPassword;
+});
 </script>
-<style scoped></style>
