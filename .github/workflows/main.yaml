@@ -1,0 +1,71 @@
+name: Main
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  main:
+    name: Run eslint scanning
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+          cache: "npm"
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.21"
+
+      # We don't want to build the entire frondend, so we are using standalone npm ci
+      - name: Install frontend packages (w/o go generate)
+        run: |
+          npm ci
+
+      - name: Install ESLint and Prettier
+        run: |
+          npm install -g eslint@8.10.0
+          npm install -g prettier@3.0.3
+          npm install -g @microsoft/eslint-formatter-sarif@2.1.7
+
+      - name: Run ESLint
+        run: npx eslint ./ui
+          --config ui/.eslintrc.js
+          --ignore-path .gitignore
+          --ignore-path ui/.gitignore
+          --ext --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts
+          --format @microsoft/eslint-formatter-sarif
+          --output-file eslint-results.sarif
+        continue-on-error: true
+
+      - name: Upload analysis results to GitHub
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: eslint-results.sarif
+          wait-for-processing: true
+
+      - name: Run Prettier
+        working-directory: ui
+        run: npx prettier src/
+
+      - name: Build Frontend
+        run: go generate -v -n -x ./...
+
+      - name: Go build
+        run: go build -v -n -x ./...
+
+      ## TODO: Add Docker build here
