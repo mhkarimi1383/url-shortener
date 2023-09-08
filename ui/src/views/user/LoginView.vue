@@ -1,0 +1,99 @@
+<template>
+  <a-form :model="formState" @finish="onFinish" @finishFailed="onFinishFailed">
+    <a-form-item label="Username" name="username" :rules="[{ required: true, message: 'Please input your username!' }]">
+      <a-input v-model:value="formState.username">
+        <template #prefix>
+          <UserOutlined />
+        </template>
+      </a-input>
+    </a-form-item>
+
+    <a-form-item label="Password" name="password" :rules="[{ required: true, message: 'Please input your password!' }]">
+      <a-input-password v-model:value="formState.password">
+        <template #prefix>
+          <LockOutlined />
+        </template>
+      </a-input-password>
+    </a-form-item>
+
+    <a-form-item>
+      <a-form-item name="remember" no-style>
+        <a-checkbox v-model:checked="formState.remember">Remember me (Username and Password will be saved as
+          cookie)</a-checkbox>
+      </a-form-item>
+    </a-form-item>
+
+    <a-form-item>
+      <a-button :disabled="disabled" type="primary" html-type="submit">
+        Log in
+      </a-button>
+      Or
+      <RouterLink to="/user/register">register now!</RouterLink>
+    </a-form-item>
+  </a-form>
+</template>
+
+<script lang="ts" setup>
+import { reactive, computed } from 'vue';
+import { UserOutlined, LockOutlined } from '@ant-design/icons-vue';
+import { inject } from 'vue';
+import type { VueCookies } from 'vue-cookies';
+import type { loginInfo, loginResponse, errorResponse } from '@/lib/api';
+import { login, loginStateCookie, loginInfoCookie, setToken } from '@/lib/api';
+import { message } from 'ant-design-vue';
+import router from '@/router';
+
+const $cookies = inject<VueCookies>("$cookies");
+
+interface FormState {
+  username: string;
+  password: string;
+  remember: boolean;
+}
+
+const formState = reactive<FormState>({
+  username: "",
+  password: "",
+  remember: false,
+});
+
+if ($cookies?.get(loginInfoCookie)) {
+  const info = $cookies.get(loginInfoCookie) as loginInfo;
+  formState.remember = true;
+  formState.password = info.Password;
+  formState.username = info.Username;
+}
+
+async function onFinish(values: any) {
+  const finish = message.loading("Logging in");
+  const info = <loginInfo>{
+    Password: values.password,
+    Username: values.username,
+  }
+  const resp = await login(info);
+  if ((resp as loginResponse).Token) {
+    if (values.remember === true) {
+      $cookies?.set(loginInfoCookie, info);
+    }
+    $cookies?.set(loginStateCookie, resp);
+    setTimeout(finish, 1000);
+    message.success(`Welcome, ${(resp as loginResponse).Info.Username}`);
+    setToken((resp as loginResponse).Token);
+    router.push("/");
+  }
+  else {
+    finish()
+    message.error((resp as errorResponse).message);
+  }
+};
+
+function onFinishFailed(errorInfo: any) {
+  message.error(errorInfo);
+};
+
+const disabled = computed(() => {
+  return !(formState.username && formState.password);
+});
+</script>
+<style scoped>
+</style>

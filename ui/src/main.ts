@@ -4,11 +4,19 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
 import Antd from 'ant-design-vue'
+import VueCookies from 'vue-cookies'
 import 'ant-design-vue/dist/reset.css'
 
 const app = createApp(App)
 
 app.use(router)
 app.use(Antd)
+app.use(VueCookies, {
+  domain: window.location.hostname,
+  expires: '20d',
+  path: '/ui/',
+  sameSite: "Strict",
+  secure: true,
+})
 
 app.mount('#app')

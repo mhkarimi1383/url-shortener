@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router'
-import { reactive, watch, h } from 'vue';
+import { reactive, watch, h, inject } from 'vue';
 import type { VNode } from 'vue';
+import { setToken, loginStateCookie, type loginResponse } from '@/lib/api';
 import {
   UserOutlined,
   HomeOutlined,
@@ -13,6 +14,14 @@ import {
   GroupOutlined,
   GithubOutlined,
 } from '@ant-design/icons-vue';
+import type { VueCookies } from 'vue-cookies';
+
+const $cookies = inject<VueCookies>("$cookies");
+
+if ($cookies?.get(loginStateCookie)) {
+  const info = $cookies.get(loginStateCookie) as loginResponse;
+  setToken(info.Token);
+}
 
 interface MenuItem {
   icon: () => VNode;
