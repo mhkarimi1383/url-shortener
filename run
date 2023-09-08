@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+set -ex
+
+go mod download
+go generate ./...
+go run .
