@@ -8,7 +8,7 @@ on:
 
 jobs:
   main:
-    name: Run eslint scanning
+    name: Run main Job
     runs-on: ubuntu-latest
 
     permissions:
@@ -19,11 +19,10 @@ jobs:
     steps:
       - name: Checkout UI code
         uses: actions/checkout@v3
-        with:
-          path: ui/
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
+        working-directory: ./app
         with:
           node-version: 18.x
           cache: "npm"
@@ -35,16 +34,19 @@ jobs:
 
       # We don't want to build the entire frondend, so we are using standalone npm ci
       - name: Install frontend packages (w/o go generate)
+        working-directory: ./app
         run: |
           npm ci
 
       - name: Install ESLint and Prettier
+        working-directory: ./app
         run: |
           npm install eslint@8.10.0
           npm install prettier@3.0.3
           npm install @microsoft/eslint-formatter-sarif@2.1.7
 
       - name: Run ESLint
+        working-directory: ./app
         run: npx eslint .
           --config .eslintrc.js
           --ignore-path .gitignore
@@ -55,6 +57,7 @@ jobs:
         continue-on-error: true
 
       - name: Upload analysis results to GitHub
+        working-directory: ./app
         uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: eslint-results.sarif
