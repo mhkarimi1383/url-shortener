@@ -165,6 +165,7 @@ func start(_ *cobra.Command, _ []string) {
 	userGroup.POST("/register/", user.Register)
 	userGroup.PUT("/change-password/:"+constrains.IdParamName+"/", user.ChangePassword, authMiddleware, checkUserExists, checkUserAdmin)
 	userGroup.POST("/", user.Create, authMiddleware, checkUserExists, checkUserAdmin)
+	// TODO: logout API (token revoke)
 
 	urlGroup := apiGroup.Group("/url", authMiddleware, checkUserExists)
 	urlGroup.POST("/", url.Create)
