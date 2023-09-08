@@ -31,7 +31,6 @@ ENV USH_LISTEN_ADDRESS="0.0.0.0:8080"
 ENV USH_DATABASE_CONNECTION_STRING="/data/database.sqlite3"
 
 COPY --from=builder /url-shortener /opt/app/url-shortener
-COPY --from=builder /go/src/github.com/mhkarimi1383/url-shortener/ui/dist /opt/app/ui/dist
 
 VOLUME [ "/data" ]
 
