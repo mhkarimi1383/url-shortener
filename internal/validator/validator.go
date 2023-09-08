@@ -8,12 +8,12 @@ import (
 )
 
 var (
-  // use a single instance of Validate, it caches struct info
-  Validate *validator.Validate
-  EchoValidator *CustomEchoValidator
+	// use a single instance of Validate, it caches struct info
+	Validate      *validator.Validate
+	EchoValidator *CustomEchoValidator
 )
 
-func init () {
+func init() {
 	Validate = validator.New()
 	EchoValidator = &CustomEchoValidator{validator: Validate}
 }
@@ -23,8 +23,8 @@ type CustomEchoValidator struct {
 }
 
 func (cev *CustomEchoValidator) Validate(i any) error {
-  if err := cev.validator.Struct(i); err != nil {
-    return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	if err := cev.validator.Struct(i); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 	return nil
 }

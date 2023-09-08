@@ -17,7 +17,7 @@ type Config struct {
 	DatabaseMaxConnectionLifetime time.Duration `validate:"required"`
 	JWTSecret                     string        `validate:"required"`
 	AddRefererQueryParam          bool          `validate:""`
-	RandomGeneratorMax int `validate:"min=10000"`
+	RandomGeneratorMax            int           `validate:"min=10000"`
 }
 
 var CurrentConfig *Config

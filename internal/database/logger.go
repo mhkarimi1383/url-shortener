@@ -15,15 +15,15 @@ type zapLogger struct {
 
 func newZapLogger(logger *zap.SugaredLogger) *zapLogger {
 	var lvl log.LogLevel
-	switch logger.Level(){
+	switch logger.Level() {
 	case zapcore.DebugLevel:
-    lvl = log.LOG_DEBUG
+		lvl = log.LOG_DEBUG
 	case zapcore.InfoLevel:
-	  lvl = log.LOG_INFO
+		lvl = log.LOG_INFO
 	case zapcore.ErrorLevel:
-	  lvl = log.LOG_ERR
+		lvl = log.LOG_ERR
 	default:
-	  lvl = log.LOG_UNKNOWN
+		lvl = log.LOG_UNKNOWN
 	}
 
 	return &zapLogger{

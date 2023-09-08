@@ -1,9 +1,9 @@
 package constrains
 
 const (
-  LimitQueryParamName = "Limit"
+	LimitQueryParamName  = "Limit"
 	OffsetQueryParamName = "Offset"
-  ShortCodeParamName   = "ShortCode"
-	IdParamName = "Id"
-	RefererQueryParam = "referer"
+	ShortCodeParamName   = "ShortCode"
+	IdParamName          = "Id"
+	RefererQueryParam    = "referer"
 )
