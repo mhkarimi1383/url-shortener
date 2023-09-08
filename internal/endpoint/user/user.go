@@ -7,12 +7,12 @@ import (
 
 	"github.com/labstack/echo/v4"
 
+	"github.com/mhkarimi1383/url-shortener/constrains"
 	"github.com/mhkarimi1383/url-shortener/internal/controller"
 	"github.com/mhkarimi1383/url-shortener/internal/database"
-	"github.com/mhkarimi1383/url-shortener/types/database_models"
-	"github.com/mhkarimi1383/url-shortener/types/request_schemas"
-	"github.com/mhkarimi1383/url-shortener/types/response_schemas"
-	"github.com/mhkarimi1383/url-shortener/constrains"
+	databasemodels "github.com/mhkarimi1383/url-shortener/types/database_models"
+	requestschemas "github.com/mhkarimi1383/url-shortener/types/request_schemas"
+	responseschemas "github.com/mhkarimi1383/url-shortener/types/response_schemas"
 )
 
 func Login(c echo.Context) error {
@@ -27,7 +27,7 @@ func Login(c echo.Context) error {
 	user, token, err := controller.Login(l)
 	if err != nil {
 		if errors.Is(err, controller.ErrInvalidUsernameOrPassword) {
-			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+			return echo.NewHTTPError(http.StatusUnauthorized, err.Error())
 		}
 		return err
 	}
