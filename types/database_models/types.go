@@ -10,7 +10,7 @@ type User struct {
 	Version   int64     `xorm:"version"`
 	CreatedAt time.Time `xorm:"created"`
 	UpdatedAt time.Time `xorm:"updated"`
-	DeletedAt time.Time `xorm:"deleted"`
+	DeletedAt time.Time `xorm:"deleted" json:"-"`
 }
 
 type Entity struct {
@@ -21,7 +21,7 @@ type Entity struct {
 	UpdatedAt   time.Time `xorm:"updated"`
 	Version     int64     `xorm:"version"`
 	Creator     User      `xorm:"bigint"`
-	DeletedAt   time.Time `xorm:"deleted"`
+	DeletedAt   time.Time `xorm:"deleted" json:"-"`
 }
 
 type Url struct {
@@ -32,6 +32,6 @@ type Url struct {
 	UpdatedAt time.Time `xorm:"updated"`
 	Version   int64     `xorm:"version"`
 	Creator   User      `xorm:"bigint"`
-	DeletedAt time.Time `xorm:"deleted"`
+	DeletedAt time.Time `xorm:"deleted" json:"-"`
 	Entity    Entity    `xorm:"null bigint"`
 }
