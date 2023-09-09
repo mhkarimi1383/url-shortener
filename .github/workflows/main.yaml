@@ -18,6 +18,10 @@ jobs:
       packages: write
       id-token: write
 
+    strategy:
+      matrix:
+        language: ["go", "javascript"]
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -30,6 +34,11 @@ jobs:
 
       - name: Setup Docker buildx
         uses: docker/setup-buildx-action@v2.10.0
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v2
+        with:
+          languages: ${{ matrix.language }}
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
@@ -79,6 +88,26 @@ jobs:
 
       - name: Go build
         run: go build -x -o ./url-shortener .
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v2
+        with:
+          category: "/language:${{matrix.language}}"
+
+      - name: Run Codacy Analysis CLI
+        uses: codacy/codacy-analysis-cli-action@v4.3.0
+        with:
+          # project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+          verbose: true
+          output: results.sarif
+          format: sarif
+          gh-code-scanning-compat: true
+          max-allowed-issues: 2147483647
+
+      - name: Upload SARIF results file
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: results.sarif
 
       - name: Log into registry ghcr.io
         if: github.event_name != 'pull_request'
