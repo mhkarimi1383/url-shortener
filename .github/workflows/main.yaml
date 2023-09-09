@@ -22,9 +22,9 @@ jobs:
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
-        working-directory: ./app
         with:
           node-version: 18.x
+          cache-dependency-path: ui/package-lock.json
           cache: "npm"
 
       - name: Set up Go
@@ -34,19 +34,19 @@ jobs:
 
       # We don't want to build the entire frondend, so we are using standalone npm ci
       - name: Install frontend packages (w/o go generate)
-        working-directory: ./app
+        working-directory: ./ui
         run: |
           npm ci
 
       - name: Install ESLint and Prettier
-        working-directory: ./app
+        working-directory: ./ui
         run: |
           npm install eslint@8.10.0
           npm install prettier@3.0.3
           npm install @microsoft/eslint-formatter-sarif@2.1.7
 
       - name: Run ESLint
-        working-directory: ./app
+        working-directory: ./ui
         run: npx eslint .
           --config .eslintrc.js
           --ignore-path .gitignore
@@ -57,10 +57,9 @@ jobs:
         continue-on-error: true
 
       - name: Upload analysis results to GitHub
-        working-directory: ./app
         uses: github/codeql-action/upload-sarif@v2
         with:
-          sarif_file: eslint-results.sarif
+          sarif_file: ui/eslint-results.sarif
           wait-for-processing: true
 
       - name: Run Prettier
