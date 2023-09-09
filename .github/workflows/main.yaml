@@ -108,6 +108,7 @@ jobs:
 
       - name: Run Codacy Analysis CLI (Metrics)
         uses: codacy/codacy-analysis-cli-action@v4.3.0
+        id: codacy_metrics
         with:
           # project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
           verbose: true
@@ -119,6 +120,7 @@ jobs:
 
       - name: Upload Codacy SARIF results file (Metrics)
         uses: github/codeql-action/upload-sarif@v2
+        continue-on-error: true # Ignore 422 errors (when there is no result)
         with:
           sarif_file: metrics_results.sarif
 
@@ -134,6 +136,7 @@ jobs:
           tool: issues
 
       - name: Upload Codacy SARIF results file (Issues)
+        continue-on-error: true # Ignore 422 errors (when there is no result)
         uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: issues_results.sarif
@@ -150,6 +153,7 @@ jobs:
           tool: duplication
 
       - name: Upload Codacy SARIF results file (Duplication)
+        continue-on-error: true # Ignore 422 errors (when there is no result)
         uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: duplication_results.sarif
