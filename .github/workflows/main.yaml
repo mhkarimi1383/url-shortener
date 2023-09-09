@@ -47,13 +47,7 @@ jobs:
 
       - name: Run ESLint
         working-directory: ./ui
-        run: npx eslint .
-          --config .eslintrc.cjs
-          --ignore-path .gitignore
-          --ignore-path .gitignore
-          --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts
-          --format @microsoft/eslint-formatter-sarif
-          --output-file eslint-results.sarif
+        run: npx eslint . --yes --config .eslintrc.cjs --ignore-path .gitignore --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --format @microsoft/eslint-formatter-sarif --output-file eslint-results.sarif
         continue-on-error: true
 
       - name: Upload analysis results to GitHub
@@ -64,7 +58,7 @@ jobs:
 
       - name: Run Prettier
         working-directory: ui
-        run: npx prettier src/
+        run: npx --yes prettier src/
 
       - name: Download go dependencies
         run: go mod download
@@ -73,6 +67,6 @@ jobs:
         run: go generate ./...
 
       - name: Go build
-        run: go build -x ./...
+        run: go build -x -o ./url-shortener .
 
       ## TODO: Add Docker build here
