@@ -1,10 +1,6 @@
 <template>
   <a-form :model="formState" @finish="onFinish" @finishFailed="onFinishFailed">
-    <a-form-item
-      label="Username"
-      name="username"
-      :rules="[{ required: true, message: 'Please input your username!' }]"
-    >
+    <a-form-item label="Username" name="username" :rules="[{ required: true, message: 'Please input your username!' }]">
       <a-input v-model:value="formState.username">
         <template #prefix>
           <UserOutlined />
@@ -12,11 +8,7 @@
       </a-input>
     </a-form-item>
 
-    <a-form-item
-      label="Password"
-      name="password"
-      :rules="[{ required: true, message: 'Please input your password!' }]"
-    >
+    <a-form-item label="Password" name="password" :rules="[{ required: true, message: 'Please input your password!' }]">
       <a-input-password v-model:value="formState.password">
         <template #prefix>
           <LockOutlined />
@@ -26,9 +18,8 @@
 
     <a-form-item>
       <a-form-item name="remember" no-style>
-        <a-checkbox v-model:checked="formState.remember"
-          >Remember me <small>(Username and Password will be saved as cookie)</small></a-checkbox
-        >
+        <a-checkbox v-model:checked="formState.remember">Remember me <small>(Username and Password will be saved as
+            cookie)</small></a-checkbox>
       </a-form-item>
     </a-form-item>
 
@@ -101,4 +92,5 @@ const disabled = computed(() => {
   return !(formState.username && formState.password);
 });
 </script>
-<style scoped></style>
+<style scoped>
+</style>
