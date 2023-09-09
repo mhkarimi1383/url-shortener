@@ -30,8 +30,8 @@ jobs:
         if: github.event_name != 'pull_request'
         uses: actions/dependency-review-action@v3
         with:
-          base-ref: ${{ github.event.base_ref }}
-          head-ref: ${{ github.event.head_commit }}
+          base-ref: ${{ github.event.before }}
+          head-ref: ${{ github.event.after }}
 
       - name: Install cosign
         if: github.event_name != 'pull_request'
