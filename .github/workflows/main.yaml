@@ -18,13 +18,12 @@ jobs:
       packages: write
       id-token: write
 
-    strategy:
-      matrix:
-        language: ["go", "javascript"]
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+
+      - name: "Dependency Review"
+        uses: actions/dependency-review-action@v3
 
       - name: Install cosign
         if: github.event_name != 'pull_request'
@@ -38,7 +37,12 @@ jobs:
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v2
         with:
-          languages: ${{ matrix.language }}
+          languages: "go"
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v2
+        with:
+          languages: "javascript"
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
