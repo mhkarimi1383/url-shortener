@@ -66,10 +66,13 @@ jobs:
         working-directory: ui
         run: npx prettier src/
 
+      - name: Download go dependencies
+        run: go mod download
+
       - name: Build Frontend
-        run: go generate -v -n -x ./...
+        run: go generate ./...
 
       - name: Go build
-        run: go build -v -n -x ./...
+        run: go build -x ./...
 
       ## TODO: Add Docker build here
