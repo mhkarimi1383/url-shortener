@@ -45,12 +45,7 @@ jobs:
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v2
         with:
-          languages: "go"
-
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v2
-        with:
-          languages: "javascript"
+          languages: "go, javascript"
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
