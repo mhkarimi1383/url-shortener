@@ -17,7 +17,7 @@ jobs:
       actions: read
 
     steps:
-      - name: Checkout UI code
+      - name: Checkout code
         uses: actions/checkout@v3
 
       - name: Set up Node.js
@@ -48,7 +48,7 @@ jobs:
       - name: Run ESLint
         working-directory: ./ui
         run: npx eslint .
-          --config .eslintrc.js
+          --config .eslintrc.cjs
           --ignore-path .gitignore
           --ignore-path .gitignore
           --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts
@@ -65,9 +65,6 @@ jobs:
       - name: Run Prettier
         working-directory: ui
         run: npx prettier src/
-
-      - name: Checkout Main code
-        uses: actions/checkout@v3
 
       - name: Build Frontend
         run: go generate -v -n -x ./...
