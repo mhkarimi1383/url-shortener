@@ -2,7 +2,10 @@
 
 set -ex
 
-cd ui && npm run format && cd ..
+cd ui
+npm run format
+npm run lint
+cd ..
 
 go mod download
 go generate ./...
