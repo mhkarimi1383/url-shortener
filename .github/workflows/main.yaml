@@ -90,36 +90,69 @@ jobs:
       - name: Download go dependencies
         run: go mod download
 
-      - name: Build Frontend
+      - name: Build Frontend (Go generate)
         run: go generate ./...
 
       - name: Go build
         run: go build -x -o ./url-shortener .
 
-      - name: Perform CodeQL Analysis
+      - name: Perform CodeQL Analysis (Go)
         uses: github/codeql-action/analyze@v2
         with:
           category: "/language:go"
 
-      - name: Perform CodeQL Analysis
+      - name: Perform CodeQL Analysis (JavaScript)
         uses: github/codeql-action/analyze@v2
         with:
           category: "/language:javascript"
 
-      - name: Run Codacy Analysis CLI
+      - name: Run Codacy Analysis CLI (Metrics)
         uses: codacy/codacy-analysis-cli-action@v4.3.0
         with:
           # project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
           verbose: true
-          output: results.sarif
+          output: metrics_results.sarif
           format: sarif
           gh-code-scanning-compat: true
           max-allowed-issues: 2147483647
+          tool: metrics
 
-      - name: Upload SARIF results file
+      - name: Upload Codacy SARIF results file (Metrics)
         uses: github/codeql-action/upload-sarif@v2
         with:
-          sarif_file: results.sarif
+          sarif_file: metrics_results.sarif
+
+      - name: Run Codacy Analysis CLI (Issues)
+        uses: codacy/codacy-analysis-cli-action@v4.3.0
+        with:
+          # project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+          verbose: true
+          output: issues_results.sarif
+          format: sarif
+          gh-code-scanning-compat: true
+          max-allowed-issues: 2147483647
+          tool: issues
+
+      - name: Upload Codacy SARIF results file (Issues)
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: issues_results.sarif
+
+      - name: Run Codacy Analysis CLI (Duplication)
+        uses: codacy/codacy-analysis-cli-action@v4.3.0
+        with:
+          # project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+          verbose: true
+          output: duplication_results.sarif
+          format: sarif
+          gh-code-scanning-compat: true
+          max-allowed-issues: 2147483647
+          tool: duplication
+
+      - name: Upload Codacy SARIF results file (Duplication)
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: duplication_results.sarif
 
       - name: Log into registry ghcr.io
         if: github.event_name != 'pull_request'
