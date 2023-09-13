@@ -29,6 +29,15 @@ export interface loginResponse {
   Token: string;
 }
 
+interface metaData {
+  Count: number;
+}
+
+export interface listUsersResponse {
+  MetaData: metaData;
+  Result: userInfo[];
+}
+
 const client = axios.create({
   baseURL: apiBaseURL,
   headers: {
@@ -74,6 +83,31 @@ export async function register(info: loginInfo): Promise<null | errorResponse> {
   let retVal = <null | errorResponse>{};
   await client
     .post<null>('/user/register/', info)
+    .then((resp: AxiosResponse) => {
+      retVal = resp.data;
+    })
+    .catch((err: AxiosError) => {
+      retVal =
+        (err.response?.data as errorResponse) ||
+        <errorResponse>{
+          message: 'Unknown error',
+        };
+    });
+  return retVal;
+}
+
+export async function listUsers(
+  limit: number,
+  offset: number,
+): Promise<listUsersResponse | errorResponse> {
+  let retVal = <listUsersResponse | errorResponse>{};
+  await client
+    .get<listUsersResponse>('/user/', {
+      params: {
+        limit: limit,
+        offset: offset,
+      },
+    })
     .then((resp: AxiosResponse) => {
       retVal = resp.data;
     })

@@ -11,8 +11,9 @@ import (
 
 	"github.com/mhkarimi1383/url-shortener/internal/database"
 	"github.com/mhkarimi1383/url-shortener/types/configuration"
-	"github.com/mhkarimi1383/url-shortener/types/database_models"
-	"github.com/mhkarimi1383/url-shortener/types/request_schemas"
+	databasemodels "github.com/mhkarimi1383/url-shortener/types/database_models"
+	requestschemas "github.com/mhkarimi1383/url-shortener/types/request_schemas"
+	responseschemas "github.com/mhkarimi1383/url-shortener/types/response_schemas"
 )
 
 var (
@@ -78,4 +79,20 @@ func ChangeUserPassword(info *requestschemas.ChangeUserPassword, userId int64) e
 	user.Password = string(encryptedPassword)
 	_, err = database.Engine.Update(&user)
 	return err
+}
+
+func ListUsers(limit, offset int) (*responseschemas.UserList, error) {
+	var users []databasemodels.User
+	prepared := new(responseschemas.UserList)
+	if err := database.Engine.Limit(limit, offset).Find(&users); err != nil {
+		return nil, err
+	}
+	prepared.Result = users
+
+	total, err := database.Engine.Count(new(databasemodels.User))
+	if err != nil {
+		return nil, err
+	}
+	prepared.MetaData.Count = total
+	return prepared, nil
 }
