@@ -1,0 +1,6 @@
+{
+  "prettier.configPath": "ui/.prettierrc.json",
+  "prettier.jsonEnable": [
+    "json"
+  ]
+}
