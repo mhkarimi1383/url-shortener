@@ -38,6 +38,10 @@ export interface listUsersResponse {
   Result: userInfo[];
 }
 
+export interface changeUserPasswordRequest {
+  Password: string;
+}
+
 const client = axios.create({
   baseURL: apiBaseURL,
   headers: {
@@ -83,6 +87,26 @@ export async function register(info: loginInfo): Promise<null | errorResponse> {
   let retVal = <null | errorResponse>{};
   await client
     .post<null>('/user/register/', info)
+    .then((resp: AxiosResponse) => {
+      retVal = resp.data;
+    })
+    .catch((err: AxiosError) => {
+      retVal =
+        (err.response?.data as errorResponse) ||
+        <errorResponse>{
+          message: 'Unknown error',
+        };
+    });
+  return retVal;
+}
+
+export async function changeUserPassword(
+  userId: number,
+  info: changeUserPasswordRequest,
+): Promise<null | errorResponse> {
+  let retVal = <null | errorResponse>{};
+  await client
+    .put<null>('/user/change-password/' + userId.toString() + '/', info)
     .then((resp: AxiosResponse) => {
       retVal = resp.data;
     })

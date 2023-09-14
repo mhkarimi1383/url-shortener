@@ -8,8 +8,11 @@
       </a-col>
     </a-row>
     <br />
-    <a-table :columns="columns" :pagination="{ total: resp?.MetaData.Count, current: offset, pageSize: limit }"
-      :data-source="resp?.Result">
+    <a-table
+      :columns="columns"
+      :pagination="{ total: resp?.MetaData.Count, current: offset, pageSize: limit }"
+      :data-source="resp?.Result"
+    >
       <template #headerCell="{ column }">
         <template v-if="column.key === 'id'">
           <NumberOutlined />
@@ -34,13 +37,22 @@
       </template>
     </a-table>
   </a-spin>
-  <a-modal warning v-model:open="changePasswordModalVisible" :confirm-loading="changePasswordModalLoading">
+  <a-modal
+    warning
+    v-model:open="changePasswordModalVisible"
+    :confirm-loading="changePasswordModalLoading"
+    @ok="confirmChangePassword"
+  >
     <template #title>
       <ExclamationCircleOutlined style="color: #d89614" /> Changing
       {{ currentSelectedUser?.Username }}'s Password
     </template>
     <a-form :model="changePasswordFormState">
-      <a-form-item label="Password" name="password" :rules="[{ required: true, message: 'Please input your password!' }]">
+      <a-form-item
+        label="Password"
+        name="password"
+        :rules="[{ required: true, message: 'Please input your password!' }]"
+      >
         <a-input-password v-model:value="changePasswordFormState.password">
           <template #prefix>
             <LockOutlined />
@@ -48,8 +60,13 @@
         </a-input-password>
       </a-form-item>
 
-      <a-form-item label="Repeat Password" name="repeatPassword" :validate-status="!passwordsAreEqual && 'error'"
-        help="Passwords should be equal" :rules="[{ required: true, message: 'Repeat your password!' }]">
+      <a-form-item
+        label="Repeat Password"
+        name="repeatPassword"
+        :validate-status="!passwordsAreEqual && 'error'"
+        help="Passwords should be equal"
+        :rules="[{ required: true, message: 'Repeat your password!' }]"
+      >
         <a-input-password v-model:value="changePasswordFormState.repeatPassword">
           <template #prefix>
             <LockOutlined />
@@ -62,7 +79,7 @@
 
 <script setup lang="ts">
 import type { listUsersResponse, errorResponse, userInfo } from '@/lib/api';
-import { listUsers } from '@/lib/api';
+import { listUsers, changeUserPassword } from '@/lib/api';
 import { message } from 'ant-design-vue';
 import { ref, reactive, computed } from 'vue';
 import { NumberOutlined, KeyOutlined, ExclamationCircleOutlined } from '@ant-design/icons-vue';
@@ -98,6 +115,32 @@ const changePasswordFormState = reactive<ChangePasswordFormState>({
 const passwordsAreEqual = computed(() => {
   return changePasswordFormState.password === changePasswordFormState.repeatPassword;
 });
+
+const confirmChangePassword = () => {
+  changePasswordModalLoading.value = true;
+  if (passwordsAreEqual.value) {
+    changeUserPassword((currentSelectedUser.value as userInfo).Id, {
+      Password: changePasswordFormState.password,
+    })
+      .then((data) => {
+        if ((data as errorResponse).message) {
+          message.error((data as errorResponse).message);
+        } else {
+          message.success('Password changed successfully');
+        }
+      })
+      .catch((data) => {
+        message.error((data as errorResponse).message);
+      })
+      .finally(() => {
+        changePasswordModalLoading.value = false;
+        changePasswordModalVisible.value = false;
+      });
+  } else {
+    message.error('Passwords should be equal');
+    changePasswordModalLoading.value = false;
+  }
+};
 
 listUsers(limit.value, offset.value - 1)
   .then((data) => {
