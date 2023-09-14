@@ -134,7 +134,7 @@ watch(
       margin-right: 0.25%;
     "
     title="URL Shortener"
-    :avatar="{ src: 'https://www.antdv.com/assets/logo.1ef800a8.svg' }"
+    :avatar="{ src: '/ui/logo.svg', shape: 'square' }"
     sub-title="Simple and minimalism URL Shortener"
   >
     <template #extra>

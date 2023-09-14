@@ -182,6 +182,7 @@ func start(_ *cobra.Command, _ []string) {
 	uiGroup.StaticFS("/", ui.MainFS)
 	uiGroup.StaticFS("/assets/", ui.AssetsFS)
 	uiGroup.FileFS("/*.html", "index.html", ui.MainFS)
+	uiGroup.FileFS("/logo.svg", "logo.svg", ui.MainFS)
 	e.FileFS("/favicon.ico", "favicon.ico", ui.MainFS)
 	e.FileFS("/ui/favicon.ico", "favicon.ico", ui.MainFS)
 
