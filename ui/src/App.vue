@@ -14,6 +14,7 @@ import {
   GroupOutlined,
   GithubOutlined,
   LoginOutlined,
+  HeartFilled,
 } from '@ant-design/icons-vue';
 import type { VueCookies } from 'vue-cookies';
 
@@ -124,19 +125,15 @@ watch(
 </script>
 
 <template>
-  <a-page-header
-    style="
+  <a-page-header style="
       border: 1px solid rgb(235, 237, 240);
       height: max-content;
       margin-top: 0.25%;
       margin-bottom: 0.25%;
       margin-left: 0.25%;
       margin-right: 0.25%;
-    "
-    title="URL Shortener"
-    :avatar="{ src: '/ui/logo.svg', shape: 'square' }"
-    sub-title="Simple and minimalism URL Shortener"
-  >
+    " title="URL Shortener" :avatar="{ src: '/ui/logo.svg', shape: 'square' }"
+    sub-title="Simple and minimalism URL Shortener">
     <template #extra>
       <a-button href="https://github.com/mhkarimi1383/url-shortener">
         <template #icon>
@@ -147,13 +144,8 @@ watch(
   </a-page-header>
   <a-layout>
     <a-layout-sider breakpoint="sm" theme="light" v-model:collapsed="state.collapsed" collapsible>
-      <a-menu
-        v-model:openKeys="state.openKeys"
-        v-model:selectedKeys="state.selectedKeys"
-        mode="vertical"
-        :inline-collapsed="state.collapsed"
-        :items="items"
-      ></a-menu>
+      <a-menu v-model:openKeys="state.openKeys" v-model:selectedKeys="state.selectedKeys" mode="vertical"
+        :inline-collapsed="state.collapsed" :items="items"></a-menu>
     </a-layout-sider>
     <a-layout style="margin-left: 3%; margin-top: 2%; margin-bottom: 2%; margin-right: 3%">
       <a-layout-content>
@@ -161,4 +153,9 @@ watch(
       </a-layout-content>
     </a-layout>
   </a-layout>
+  <a-layout-footer style="textAlign: center;">
+    Made with
+    <HeartFilled style="color: red;" />
+    by <a href="https://github.com/mhkarimi1383">mhkarimi1383</a>
+  </a-layout-footer>
 </template>

@@ -6,7 +6,7 @@
   box-sizing: border-box;
   margin: 0;
   font-weight: normal;
-  font-family: 'Fira Code';
+  font-family: 'Fira Code' !important;
 }
 
 body {
