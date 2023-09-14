@@ -49,6 +49,26 @@ const router = createRouter({
       name: 'userRegister',
       component: () => import('../views/user/RegisterView.vue'),
     },
+    {
+      path: '/error/404',
+      name: '404Error',
+      component: () => import('../views/errorPages/404View.vue'),
+    },
+    {
+      path: '/error/500',
+      name: '500Error',
+      component: () => import('../views/errorPages/500View.vue'),
+    },
+    {
+      path: '/error/403',
+      name: '403Error',
+      component: () => import('../views/errorPages/403View.vue'),
+    },
+    {
+      path: '/:pathMatch(.*)*',
+      name: '404Error',
+      component: () => import('../views/errorPages/404View.vue'),
+    },
   ],
 });
 
