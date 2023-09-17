@@ -16,6 +16,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 */package cmd
 
 import (
+	"net/http"
 	"os"
 	"strconv"
 	"time"
@@ -151,6 +152,7 @@ func start(_ *cobra.Command, _ []string) {
 	e.Use(echozap.ZapLogger(log.Logger))
 	e.Use(middleware.Recover())
 	e.Use(middleware.RequestID())
+
 	e.Validator = ivalidator.EchoValidator
 	e.HidePort = true
 	e.HideBanner = true
@@ -159,6 +161,12 @@ func start(_ *cobra.Command, _ []string) {
 	e.Any("/:"+constrains.ShortCodeParamName+"/", url.Redirect)
 
 	apiGroup := e.Group("/api")
+	apiGroup.Use(middleware.AddTrailingSlashWithConfig(
+		middleware.TrailingSlashConfig{
+			RedirectCode: http.StatusPermanentRedirect,
+			Skipper:      middleware.DefaultSkipper,
+		},
+	))
 
 	userGroup := apiGroup.Group("/user")
 	userGroup.POST("/login/", user.Login)
