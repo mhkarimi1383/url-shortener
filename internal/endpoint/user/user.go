@@ -111,7 +111,7 @@ func Create(c echo.Context) error {
 	return c.NoContent(http.StatusCreated)
 }
 
-func ChangePassword(c echo.Context) error {
+func AdminChangePassword(c echo.Context) error {
 	r := new(requestschemas.ChangeUserPassword)
 	if err := c.Bind(r); err != nil {
 		return err
@@ -127,6 +127,25 @@ func ChangePassword(c echo.Context) error {
 	}
 
 	if err := controller.ChangeUserPassword(r, id); err != nil {
+		if errors.Is(err, controller.ErrUserDoesNotExist) {
+			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+		}
+		return err
+	}
+	return c.NoContent(http.StatusNoContent)
+}
+
+func ChangePassword(c echo.Context) error {
+	user := c.Get(constrains.UserInfoContextVar).(databasemodels.User)
+	r := new(requestschemas.ChangeUserPassword)
+	if err := c.Bind(r); err != nil {
+		return err
+	}
+	if err := c.Validate(r); err != nil {
+		return err
+	}
+
+	if err := controller.ChangeUserPassword(r, user.Id); err != nil {
 		if errors.Is(err, controller.ErrUserDoesNotExist) {
 			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 		}
