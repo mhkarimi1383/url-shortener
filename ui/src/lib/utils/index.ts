@@ -1,0 +1,1 @@
+export { getBrowserTheme } from './browser';
