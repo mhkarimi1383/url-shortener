@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { inject } from 'vue';
-import { loginStateCookie, loginInfoCookie, setToken } from '@/lib/api';
-import type { VueCookies } from 'vue-cookies';
 import router from '@/router';
 import { message } from 'ant-design-vue';
+import type { VueCookies } from 'vue-cookies';
+import { loginInfoCookie, loginStateCookie, setToken } from '@/lib/api';
 
 const $cookies = inject<VueCookies>('$cookies');
 

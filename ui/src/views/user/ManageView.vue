@@ -78,20 +78,20 @@
 </template>
 
 <script setup lang="ts">
-import type { listUsersResponse, errorResponse, userInfo } from '@/lib/api';
-import { listUsers, changeUserPassword } from '@/lib/api';
 import { message } from 'ant-design-vue';
-import { ref, reactive, computed } from 'vue';
-import { NumberOutlined, KeyOutlined, ExclamationCircleOutlined } from '@ant-design/icons-vue';
+import { computed, reactive, ref } from 'vue';
+import { adminChangeUserPassword, listUsers } from '@/lib/api';
+import type { errorResponse, listUsersResponse, userInfo } from '@/lib/api';
+import { ExclamationCircleOutlined, KeyOutlined, NumberOutlined } from '@ant-design/icons-vue';
 
 const limit = ref(5);
 const offset = ref(1);
 const loading = ref<boolean>(true);
 const resp = ref<listUsersResponse>({
+  Result: [],
   MetaData: {
     Count: NaN,
   },
-  Result: [],
 });
 const changePasswordModalVisible = ref<boolean>(false);
 const changePasswordModalLoading = ref<boolean>(false);
@@ -119,7 +119,7 @@ const passwordsAreEqual = computed(() => {
 const confirmChangePassword = () => {
   changePasswordModalLoading.value = true;
   if (passwordsAreEqual.value) {
-    changeUserPassword((currentSelectedUser.value as userInfo).Id, {
+    adminChangeUserPassword((currentSelectedUser.value as userInfo).Id, {
       Password: changePasswordFormState.password,
     })
       .then((data) => {
@@ -155,38 +155,38 @@ listUsers(limit.value, offset.value - 1)
 
 const columns = [
   {
+    key: 'id',
     name: 'Id',
     dataIndex: 'Id',
-    key: 'id',
   },
   {
+    key: 'username',
     title: 'Username',
     dataIndex: 'Username',
-    key: 'username',
   },
   {
+    key: 'admin',
     title: 'Admin',
     dataIndex: 'Admin',
-    key: 'admin',
   },
   {
+    key: 'createdAt',
     title: 'CreatedAt',
     dataIndex: 'CreatedAt',
-    key: 'createdAt',
   },
   {
+    key: 'updatedAt',
     title: 'UpdatedAt',
     dataIndex: 'UpdatedAt',
-    key: 'updatedAt',
   },
   {
-    title: 'Version',
     key: 'version',
+    title: 'Version',
     dataIndex: 'Version',
   },
   {
-    title: 'Actions',
     key: 'actions',
+    title: 'Actions',
   },
 ];
 </script>

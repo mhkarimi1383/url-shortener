@@ -47,12 +47,12 @@
 </template>
 
 <script lang="ts" setup>
-import { reactive, computed } from 'vue';
-import { UserOutlined, LockOutlined } from '@ant-design/icons-vue';
-import type { loginInfo, errorResponse } from '@/lib/api';
+import router from '@/router';
 import { register } from '@/lib/api';
 import { message } from 'ant-design-vue';
-import router from '@/router';
+import { computed, reactive } from 'vue';
+import type { errorResponse, loginInfo } from '@/lib/api';
+import { LockOutlined, UserOutlined } from '@ant-design/icons-vue';
 
 interface FormState {
   username: string;

@@ -1,25 +1,25 @@
 <script setup lang="ts">
-import {
-  KeyOutlined,
-  HeartFilled,
-  UserOutlined,
-  HomeOutlined,
-  InfoOutlined,
-  LinkOutlined,
-  GroupOutlined,
-  LoginOutlined,
-  LogoutOutlined,
-  GithubOutlined,
-  VerifiedOutlined,
-} from '@ant-design/icons-vue';
 import type { VNode } from 'vue';
 import { theme } from 'ant-design-vue';
-import type { VueCookies } from 'vue-cookies';
 import { getBrowserTheme } from '@/lib/utils';
+import type { VueCookies } from 'vue-cookies';
 import MoonIcon from '@/components/MoonIcon.vue';
 import { RouterLink, RouterView } from 'vue-router';
-import { reactive, watch, h, inject, ref } from 'vue';
-import { setToken, loginStateCookie, type loginResponse } from '@/lib/api';
+import { h, inject, reactive, ref, watch } from 'vue';
+import { type loginResponse, loginStateCookie, setToken } from '@/lib/api';
+import {
+  GithubOutlined,
+  GroupOutlined,
+  HeartFilled,
+  HomeOutlined,
+  InfoOutlined,
+  KeyOutlined,
+  LinkOutlined,
+  LoginOutlined,
+  LogoutOutlined,
+  UserOutlined,
+  VerifiedOutlined,
+} from '@ant-design/icons-vue';
 
 const currentTheme = ref<string>(localStorage.getItem('theme') || getBrowserTheme() || 'light');
 
@@ -56,77 +56,77 @@ interface MenuItem {
 
 const currentRouteName = window.location.pathname.replace('/ui', '');
 const state = reactive({
-  collapsed: false,
-  selectedKeys: [currentRouteName || '/'],
   openKeys: [],
   preOpenKeys: [],
+  collapsed: false,
+  selectedKeys: [currentRouteName || '/'],
 });
 
 const items = reactive<MenuItem[]>([
   {
     key: '/',
-    icon: () => h(HomeOutlined),
-    disabled: !loggedIn,
-    label: (loggedIn && h(RouterLink, { to: '/' }, 'Home')) || 'Home',
     title: 'Home',
+    disabled: !loggedIn,
+    icon: () => h(HomeOutlined),
+    label: (loggedIn && h(RouterLink, { to: '/' }, 'Home')) || 'Home',
   },
   {
     key: '/url',
-    icon: () => h(LinkOutlined),
-    disabled: !loggedIn,
-    label: (loggedIn && h(RouterLink, { to: '/url' }, 'URL')) || 'URL',
     title: 'URL',
+    disabled: !loggedIn,
+    icon: () => h(LinkOutlined),
+    label: (loggedIn && h(RouterLink, { to: '/url' }, 'URL')) || 'URL',
   },
   {
     key: '/entity',
+    title: 'Entity',
     disabled: !Admin,
     icon: () => h(GroupOutlined),
     label: (Admin && h(RouterLink, { to: '/entity' }, 'Entity')) || 'Entity',
-    title: 'Entity',
   },
   {
     key: 'user',
-    icon: () => h(UserOutlined),
     label: 'User',
     title: 'User',
+    icon: () => h(UserOutlined),
     children: [
       {
+        disabled: !loggedIn,
+        title: 'Change Password',
         icon: () => h(KeyOutlined),
         key: '/user/change-password',
-        disabled: !loggedIn,
         label:
           (loggedIn && h(RouterLink, { to: '/user/change-password' }, 'Change Password')) ||
           'Change Password',
-        title: 'Change Password',
       },
       {
-        icon: () => h(VerifiedOutlined),
         disabled: !Admin,
         key: '/user/manage',
-        label: (Admin && h(RouterLink, { to: '/user/manage' }, 'Manage Users')) || 'Manage Users',
         title: 'Manage Users',
+        icon: () => h(VerifiedOutlined),
+        label: (Admin && h(RouterLink, { to: '/user/manage' }, 'Manage Users')) || 'Manage Users',
       },
       {
-        icon: () => h(LoginOutlined),
-        key: '/user/login',
-        label: h(RouterLink, { to: '/user/login' }, 'Login'),
         title: 'Login',
+        key: '/user/login',
+        icon: () => h(LoginOutlined),
+        label: h(RouterLink, { to: '/user/login' }, 'Login'),
       },
       {
-        icon: () => h(LogoutOutlined),
         danger: true,
+        title: 'Logout',
         disabled: !loggedIn,
         key: '/user/logout',
+        icon: () => h(LogoutOutlined),
         label: (loggedIn && h(RouterLink, { to: '/user/logout' }, 'Logout')) || 'Logout',
-        title: 'Logout',
       },
     ],
   },
   {
     key: '/about',
+    title: 'About',
     icon: () => h(InfoOutlined),
     label: h(RouterLink, { to: '/about' }, 'About'),
-    title: 'About',
   },
 ]);
 

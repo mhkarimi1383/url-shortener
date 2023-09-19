@@ -1,10 +1,11 @@
 import axios from 'axios';
-import type { AxiosError, AxiosResponse } from 'axios';
 import router from '@/router';
+import type { AxiosError, AxiosResponse } from 'axios';
 
 const apiBaseURL = '/api';
 export const loginStateCookie = 'loginState';
 export const loginInfoCookie = 'loginInfo';
+const unknownError = 'Unknown error';
 
 export interface errorResponse {
   message: string;
@@ -77,7 +78,7 @@ export async function login(info: loginInfo): Promise<loginResponse | errorRespo
       retVal =
         (err.response?.data as errorResponse) ||
         <errorResponse>{
-          message: 'Unknown error',
+          message: unknownError,
         };
     });
   return retVal;
@@ -94,13 +95,13 @@ export async function register(info: loginInfo): Promise<null | errorResponse> {
       retVal =
         (err.response?.data as errorResponse) ||
         <errorResponse>{
-          message: 'Unknown error',
+          message: unknownError,
         };
     });
   return retVal;
 }
 
-export async function changeUserPassword(
+export async function adminChangeUserPassword(
   userId: number,
   info: changeUserPasswordRequest,
 ): Promise<null | errorResponse> {
@@ -114,7 +115,26 @@ export async function changeUserPassword(
       retVal =
         (err.response?.data as errorResponse) ||
         <errorResponse>{
-          message: 'Unknown error',
+          message: unknownError,
+        };
+    });
+  return retVal;
+}
+
+export async function changeUserPassword(
+  info: changeUserPasswordRequest,
+): Promise<null | errorResponse> {
+  let retVal = <null | errorResponse>{};
+  await client
+    .put<null>('/user/change-password/', info)
+    .then((resp: AxiosResponse) => {
+      retVal = resp.data;
+    })
+    .catch((err: AxiosError) => {
+      retVal =
+        (err.response?.data as errorResponse) ||
+        <errorResponse>{
+          message: unknownError,
         };
     });
   return retVal;
@@ -139,7 +159,7 @@ export async function listUsers(
       retVal =
         (err.response?.data as errorResponse) ||
         <errorResponse>{
-          message: 'Unknown error',
+          message: unknownError,
         };
     });
   return retVal;

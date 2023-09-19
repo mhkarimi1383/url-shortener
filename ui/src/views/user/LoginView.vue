@@ -41,14 +41,13 @@
 </template>
 
 <script lang="ts" setup>
-import { reactive, computed } from 'vue';
-import { UserOutlined, LockOutlined } from '@ant-design/icons-vue';
-import { inject } from 'vue';
-import type { VueCookies } from 'vue-cookies';
-import type { loginInfo, loginResponse, errorResponse } from '@/lib/api';
-import { login, loginStateCookie, loginInfoCookie, setToken } from '@/lib/api';
-import { message } from 'ant-design-vue';
 import router from '@/router';
+import { message } from 'ant-design-vue';
+import type { VueCookies } from 'vue-cookies';
+import { computed, inject, reactive } from 'vue';
+import { LockOutlined, UserOutlined } from '@ant-design/icons-vue';
+import type { errorResponse, loginInfo, loginResponse } from '@/lib/api';
+import { login, loginInfoCookie, loginStateCookie, setToken } from '@/lib/api';
 
 const $cookies = inject<VueCookies>('$cookies');
 
