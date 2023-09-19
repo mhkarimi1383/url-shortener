@@ -1,3 +1,4 @@
+import { getToken } from '@/lib/api';
 import HomeView from '../views/HomeView.vue';
 import { createRouter, createWebHistory } from 'vue-router';
 
@@ -71,5 +72,22 @@ const router = createRouter({
     },
   ],
 });
+
+const publicRoutes = [
+  "userLogin",
+  "userRegister",
+  "404Error",
+  "500Error",
+  "403Error",
+]
+
+router.beforeEach(async (to, _) => {
+  if (
+    !getToken() &&
+    !(to.name && publicRoutes.includes(to.name.toString()))
+  ) {
+    return { name: 'userLogin' }
+  }
+})
 
 export default router;

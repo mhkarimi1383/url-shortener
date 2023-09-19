@@ -1,11 +1,11 @@
-import axios from 'axios';
 import router from '@/router';
-import type { AxiosError, AxiosResponse } from 'axios';
+import axios, { type AxiosError, type AxiosResponse } from 'axios';
 
 const apiBaseURL = '/api';
 export const loginStateCookie = 'loginState';
 export const loginInfoCookie = 'loginInfo';
 const unknownError = 'Unknown error';
+let userToken: undefined | string = undefined;
 
 export interface errorResponse {
   message: string;
@@ -60,9 +60,15 @@ const loginInterceptor = function (error: AxiosError) {
 export function setToken(token: string | null) {
   if (token === null) {
     client.defaults.headers.common.Authorization = undefined;
+    userToken = undefined;
   } else {
     client.defaults.headers.common.Authorization = `Bearer ${token}`;
+    userToken = token;
   }
+}
+
+export function getToken() {
+  return userToken;
 }
 
 client.interceptors.response.use(undefined, loginInterceptor);
