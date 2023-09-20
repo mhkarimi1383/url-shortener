@@ -74,20 +74,19 @@ const router = createRouter({
 });
 
 const publicRoutes = [
-  "userLogin",
-  "userRegister",
-  "404Error",
-  "500Error",
-  "403Error",
-]
+  'home',
+  'about',
+  '404Error',
+  '500Error',
+  '403Error',
+  'userLogin',
+  'userRegister',
+];
 
 router.beforeEach(async (to, _) => {
-  if (
-    !getToken() &&
-    !(to.name && publicRoutes.includes(to.name.toString()))
-  ) {
-    return { name: 'userLogin' }
+  if (!getToken() && !(to.name && publicRoutes.includes(to.name.toString()))) {
+    return { name: 'userLogin' };
   }
-})
+});
 
 export default router;

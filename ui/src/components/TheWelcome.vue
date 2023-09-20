@@ -1,8 +1,8 @@
 <template>
-  <h1>H1</h1>
-  <h2>H2</h2>
-  <h3>H3</h3>
-  <h4>H4</h4>
-  <h5>H5</h5>
-  <p>paragraph</p>
+  <a-typography-title :level="1">H1</a-typography-title>
+  <a-typography-title :level="2">H2</a-typography-title>
+  <a-typography-title :level="3">H3</a-typography-title>
+  <a-typography-title :level="4">H4</a-typography-title>
+  <a-typography-title :level="5">H5</a-typography-title>
+  <a-typography-paragraph>paragraph</a-typography-paragraph>
 </template>
