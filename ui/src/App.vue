@@ -8,16 +8,16 @@ import { RouterLink, RouterView } from 'vue-router';
 import { h, inject, reactive, ref, watch } from 'vue';
 import { type loginResponse, loginStateCookie, setToken } from '@/lib/api';
 import {
-  GithubOutlined,
-  GroupOutlined,
   HeartFilled,
+  KeyOutlined,
   HomeOutlined,
   InfoOutlined,
-  KeyOutlined,
   LinkOutlined,
-  LoginOutlined,
-  LogoutOutlined,
   UserOutlined,
+  GroupOutlined,
+  LoginOutlined,
+  GithubOutlined,
+  LogoutOutlined,
   VerifiedOutlined,
 } from '@ant-design/icons-vue';
 

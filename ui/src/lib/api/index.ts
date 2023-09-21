@@ -1,11 +1,13 @@
-import router from '@/router';
-import axios, { type AxiosError, type AxiosResponse } from 'axios';
+import client from './client';
+import { type AxiosError, type AxiosResponse } from 'axios';
 
-const apiBaseURL = '/api';
-export const loginStateCookie = 'loginState';
 export const loginInfoCookie = 'loginInfo';
+export const loginStateCookie = 'loginState';
+export { setToken, getToken } from './client';
+
 const unknownError = 'Unknown error';
-let userToken: undefined | string = undefined;
+const limitQueryParam = 'Limit';
+const offsetQueryParam = 'Offset';
 
 export interface errorResponse {
   message: string;
@@ -43,35 +45,25 @@ export interface changeUserPasswordRequest {
   Password: string;
 }
 
-const client = axios.create({
-  baseURL: apiBaseURL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
-
-const loginInterceptor = function (error: AxiosError) {
-  if (error.status === 401) {
-    router.push('/user/login');
-  }
-  return Promise.reject(error);
-};
-
-export function setToken(token: string | null) {
-  if (token === null) {
-    client.defaults.headers.common.Authorization = undefined;
-    userToken = undefined;
-  } else {
-    client.defaults.headers.common.Authorization = `Bearer ${token}`;
-    userToken = token;
-  }
+export interface entityCreateRequest {
+  Name: string;
+  Description: string;
 }
 
-export function getToken() {
-  return userToken;
+export interface entity {
+  Id: number;
+  Name: string;
+  Description: string;
+  CreatedAt: string;
+  UpdatedAt: string;
+  Version: number;
+  Creator: userInfo;
 }
 
-client.interceptors.response.use(undefined, loginInterceptor);
+export interface listEntitiesResponse {
+  MetaData: metaData;
+  Result: entity[];
+}
 
 export async function login(info: loginInfo): Promise<loginResponse | errorResponse> {
   let retVal = <loginResponse | errorResponse>{};
@@ -154,8 +146,67 @@ export async function listUsers(
   await client
     .get<listUsersResponse>('/user/', {
       params: {
-        limit: limit,
-        offset: offset,
+        [limitQueryParam]: limit,
+        [offsetQueryParam]: offset,
+      },
+    })
+    .then((resp: AxiosResponse) => {
+      retVal = resp.data;
+    })
+    .catch((err: AxiosError) => {
+      retVal =
+        (err.response?.data as errorResponse) ||
+        <errorResponse>{
+          message: unknownError,
+        };
+    });
+  return retVal;
+}
+
+export async function createEntity(entity: entityCreateRequest): Promise<null | errorResponse> {
+  let retVal = <null | errorResponse>{};
+  await client
+    .post<null>('/entity/', entity)
+    .then((resp: AxiosResponse) => {
+      retVal = resp.data;
+    })
+    .catch((err: AxiosError) => {
+      retVal =
+        (err.response?.data as errorResponse) ||
+        <errorResponse>{
+          message: unknownError,
+        };
+    });
+  return retVal;
+}
+
+export async function deleteEntity(Id: number): Promise<null | errorResponse> {
+  let retVal = <null | errorResponse>{};
+  await client
+    .post<null>('/entity/' + Id.toString() + '/')
+    .then((resp: AxiosResponse) => {
+      retVal = resp.data;
+    })
+    .catch((err: AxiosError) => {
+      retVal =
+        (err.response?.data as errorResponse) ||
+        <errorResponse>{
+          message: unknownError,
+        };
+    });
+  return retVal;
+}
+
+export async function listEntities(
+  limit: number,
+  offset: number,
+): Promise<listEntitiesResponse | errorResponse> {
+  let retVal = <listEntitiesResponse | errorResponse>{};
+  await client
+    .get<listEntitiesResponse>('/entity/', {
+      params: {
+        [limitQueryParam]: limit,
+        [offsetQueryParam]: offset,
       },
     })
     .then((resp: AxiosResponse) => {
