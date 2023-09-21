@@ -2,8 +2,9 @@ package controller
 
 import (
 	"github.com/mhkarimi1383/url-shortener/internal/database"
-	"github.com/mhkarimi1383/url-shortener/types/database_models"
-	"github.com/mhkarimi1383/url-shortener/types/request_schemas"
+	databasemodels "github.com/mhkarimi1383/url-shortener/types/database_models"
+	requestschemas "github.com/mhkarimi1383/url-shortener/types/request_schemas"
+	responseschemas "github.com/mhkarimi1383/url-shortener/types/response_schemas"
 	"github.com/mhkarimi1383/url-shortener/utils/shortcode"
 )
 
@@ -74,12 +75,19 @@ func ListUrls(user databasemodels.User, limit, offset int) ([]databasemodels.Url
 	return urls, nil
 }
 
-func ListEntities(limit, offset int) ([]databasemodels.Entity, error) {
+func ListEntities(limit, offset int) (*responseschemas.ListEntities, error) {
 	var entities []databasemodels.Entity
+	prepared := new(responseschemas.ListEntities)
 	if err := database.Engine.Limit(limit, offset).Find(&entities); err != nil {
 		return nil, err
 	}
-	return entities, nil
+	prepared.Result = entities
+	total, err := database.Engine.Count(new(databasemodels.Entity))
+	if err != nil {
+		return nil, err
+	}
+	prepared.MetaData.Count = total
+	return prepared, nil
 }
 
 func DeleteEntity(id int64) error {

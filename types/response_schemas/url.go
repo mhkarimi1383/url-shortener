@@ -1,6 +1,6 @@
 package responseschemas
 
-import "github.com/mhkarimi1383/url-shortener/types/database_models"
+import databasemodels "github.com/mhkarimi1383/url-shortener/types/database_models"
 
 type Create struct {
 	ShortUrl  string
@@ -14,4 +14,7 @@ type Url struct {
 
 type ListUrls []Url
 
-type ListEntities []databasemodels.Entity
+type ListEntities struct {
+	MetaData MetaData
+	Result   []databasemodels.Entity
+}
