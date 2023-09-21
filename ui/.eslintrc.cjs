@@ -4,18 +4,18 @@ require('@rushstack/eslint-patch/modern-module-resolution');
 module.exports = {
   root: true,
   plugins: ['waterfall'],
-    parserOptions: {
+  parserOptions: {
     ecmaVersion: 'latest',
     extraFileExtensions: ['.vue'],
     parser: require.resolve('@typescript-eslint/parser'),
   },
-    rules: {
+  rules: {
     'waterfall/waterfall-objects': 'error',
     'waterfall/waterfall-imports': 'error',
     'waterfall/waterfall-requires': 'error',
     'no-unused-vars': ['error', { argsIgnorePattern: '^_$' }],
   },
-    extends: [
+  extends: [
     'plugin:vue/vue3-essential',
     'eslint:recommended',
     // '@vue/eslint-config-typescript',

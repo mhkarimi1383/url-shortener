@@ -13,7 +13,9 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
-*/package cmd
+*/
+
+package cmd
 
 import (
 	"net/http"
@@ -149,6 +151,13 @@ func start(_ *cobra.Command, _ []string) {
 		}
 	}
 
+	addTrailingSlashMiddleware := middleware.AddTrailingSlashWithConfig(
+		middleware.TrailingSlashConfig{
+			RedirectCode: http.StatusPermanentRedirect,
+			Skipper:      middleware.DefaultSkipper,
+		},
+	)
+
 	e.Use(echozap.ZapLogger(log.Logger))
 	e.Use(middleware.Recover())
 	e.Use(middleware.RequestID())
@@ -161,12 +170,7 @@ func start(_ *cobra.Command, _ []string) {
 	e.Any("/:"+constrains.ShortCodeParamName+"/", url.Redirect)
 
 	apiGroup := e.Group("/api")
-	apiGroup.Use(middleware.AddTrailingSlashWithConfig(
-		middleware.TrailingSlashConfig{
-			RedirectCode: http.StatusPermanentRedirect,
-			Skipper:      middleware.DefaultSkipper,
-		},
-	))
+	apiGroup.Use(addTrailingSlashMiddleware)
 
 	userGroup := apiGroup.Group("/user")
 	userGroup.POST("/login/", user.Login)
@@ -188,6 +192,7 @@ func start(_ *cobra.Command, _ []string) {
 	entityGroup.DELETE("/:"+constrains.IdParamName+"/", entity.Delete)
 
 	uiGroup := e.Group("/ui")
+	uiGroup.Any("", nil, addTrailingSlashMiddleware)
 	uiGroup.StaticFS("/", ui.MainFS)
 	uiGroup.StaticFS("/assets/", ui.AssetsFS)
 	uiGroup.FileFS("/*.html", "index.html", ui.MainFS)
