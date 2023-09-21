@@ -4,11 +4,15 @@ Simple and minimalism URL Shortener
 
 ## Made out of
 
+- Golang for backend
 - XORM as ORM
 - Echo as HTTP Framework
-- Vue3 with Ant Design Vue (Soon) for frontend
 - go-playground/validator as Validator
 - Cobra as cli and configuration manager
+- TS for frontend
+- Vue3 as Frontend framework
+- Ant Design Vue as UI Components
+- ...
 
 ## Running project
 
@@ -20,7 +24,9 @@ just run project with `--help` to see options and their env equivalent
 
 ### Docker
 
-Dockerfile for the project is available here, I will make pre-built Docker images available later on using GitHub Action and ghcr
+Available as `ghcr.io/mhkarimi1383/url-shortener:main`
+
+simply run that with the options/envs as you want
 
 ## TODO
 
