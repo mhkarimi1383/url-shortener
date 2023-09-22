@@ -183,7 +183,7 @@ export async function createEntity(entity: entityCreateRequest): Promise<null | 
 export async function deleteEntity(Id: number): Promise<null | errorResponse> {
   let retVal = <null | errorResponse>{};
   await client
-    .post<null>('/entity/' + Id.toString() + '/')
+    .delete<null>('/entity/' + Id.toString() + '/')
     .then((resp: AxiosResponse) => {
       retVal = resp.data;
     })
