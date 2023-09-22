@@ -30,7 +30,7 @@ simply run that with the options/envs as you want
 
 ## TODO
 
-- [  ] Add more deploy/build options
-- [  ] API Documentation (swaggo is buggy and generating errors with some datatypes)
-- [  ] Vue3 Frontend
-- [  ] Webhook and Reporting Support
+- [ ] Add more deploy/build options
+- [ ] API Documentation (swaggo is buggy and generating errors with some datatypes)
+- [ ] Vue3 Frontend
+- [ ] Webhook and Reporting Support
