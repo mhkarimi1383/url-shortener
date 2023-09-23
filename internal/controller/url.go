@@ -61,18 +61,31 @@ func DeleteUrl(id int64, user databasemodels.User) error {
 	return err
 }
 
-func ListUrls(user databasemodels.User, limit, offset int) ([]databasemodels.Url, error) {
+func ListUrls(user databasemodels.User, limit, offset int) (*responseschemas.ListUrls, error) {
 	var urls []databasemodels.Url
+	prepared := new(responseschemas.ListUrls)
 	if user.Admin {
 		if err := database.Engine.Limit(limit, offset).Find(&urls); err != nil {
 			return nil, err
 		}
-		return urls, nil
+		total, err := database.Engine.Count(new(databasemodels.Entity))
+		if err != nil {
+			return nil, err
+		}
+		prepared.MetaData.Count = total
+		return prepared, nil
 	}
 	if err := database.Engine.Limit(limit, offset).Find(&urls, &databasemodels.Url{Creator: user}); err != nil {
 		return nil, err
 	}
-	return urls, nil
+	total, err := database.Engine.Count(&databasemodels.Entity{
+		Creator: user,
+	})
+	if err != nil {
+		return nil, err
+	}
+	prepared.MetaData.Count = total
+	return prepared, nil
 }
 
 func ListEntities(limit, offset int) (*responseschemas.ListEntities, error) {

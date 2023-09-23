@@ -11,9 +11,9 @@ import (
 	"github.com/mhkarimi1383/url-shortener/internal/controller"
 	"github.com/mhkarimi1383/url-shortener/internal/database"
 	"github.com/mhkarimi1383/url-shortener/types/configuration"
-	"github.com/mhkarimi1383/url-shortener/types/database_models"
-	"github.com/mhkarimi1383/url-shortener/types/request_schemas"
-	"github.com/mhkarimi1383/url-shortener/types/response_schemas"
+	databasemodels "github.com/mhkarimi1383/url-shortener/types/database_models"
+	requestschemas "github.com/mhkarimi1383/url-shortener/types/request_schemas"
+	responseschemas "github.com/mhkarimi1383/url-shortener/types/response_schemas"
 )
 
 func Redirect(c echo.Context) error {
@@ -96,11 +96,8 @@ func List(c echo.Context) error {
 		return err
 	}
 
-	for _, item := range list {
-		resp = append(resp, responseschemas.Url{
-			Url:      item,
-			ShortUrl: c.Scheme() + "://" + c.Request().Host + "/" + item.ShortCode,
-		})
+	for _, item := range list.Result {
+		item.ShortUrl = c.Scheme() + "://" + c.Request().Host + "/" + item.ShortCode
 	}
 
 	return c.JSON(http.StatusOK, resp)

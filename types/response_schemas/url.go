@@ -8,11 +8,14 @@ type Create struct {
 }
 
 type Url struct {
-	databasemodels.Url `json:",embed"`
+	databasemodels.Url `json:",inline"`
 	ShortUrl           string
 }
 
-type ListUrls []Url
+type ListUrls struct {
+	Result   []Url
+	MetaData MetaData
+}
 
 type ListEntities struct {
 	MetaData MetaData

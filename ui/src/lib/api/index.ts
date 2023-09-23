@@ -221,3 +221,27 @@ export async function listEntities(
     });
   return retVal;
 }
+
+export async function listUrls(limit: number,
+  offset: number,
+): Promise<listEntitiesResponse | errorResponse> {
+  let retVal = <listEntitiesResponse | errorResponse>{};
+  await client
+    .get<listEntitiesResponse>('/url/', {
+      params: {
+        [limitQueryParam]: limit,
+        [offsetQueryParam]: offset,
+      },
+    })
+    .then((resp: AxiosResponse) => {
+      retVal = resp.data;
+    })
+    .catch((err: AxiosError) => {
+      retVal =
+        (err.response?.data as errorResponse) ||
+        <errorResponse>{
+          message: unknownError,
+        };
+    });
+  return retVal;
+}
