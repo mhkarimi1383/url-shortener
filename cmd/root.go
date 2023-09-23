@@ -80,6 +80,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&cfg.JWTSecret, "jwt-secret", "superdupersecret", "jwt secret to sign tokens with, strongly recommended to change")
 	rootCmd.PersistentFlags().BoolVar(&cfg.AddRefererQueryParam, "add-referer-query-param", true, "Add 'referer' query param to redirect url or not")
 	rootCmd.PersistentFlags().IntVar(&cfg.RandomGeneratorMax, "random-generator-max", 10000, "Generator will use this to generate shortcodes (higher value = bigger shortcodes), at least 10000 should be set")
+	rootCmd.PersistentFlags().StringVarP(&cfg.RootRedirect, "root-redirect", "r", "/ui/", "Path/URL to redirect when someone comes to root url")
 }
 
 func start(_ *cobra.Command, _ []string) {
@@ -168,6 +169,10 @@ func start(_ *cobra.Command, _ []string) {
 
 	e.Any("/:"+constrains.ShortCodeParamName, url.Redirect)
 	e.Any("/:"+constrains.ShortCodeParamName+"/", url.Redirect)
+
+	e.Any("/", func(c echo.Context) error {
+		return c.Redirect(http.StatusTemporaryRedirect, cfg.RootRedirect)
+	})
 
 	apiGroup := e.Group("/api")
 	apiGroup.Use(addTrailingSlashMiddleware)

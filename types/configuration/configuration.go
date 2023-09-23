@@ -18,6 +18,7 @@ type Config struct {
 	JWTSecret                     string        `validate:"required"`
 	AddRefererQueryParam          bool          `validate:""`
 	RandomGeneratorMax            int           `validate:"min=10000"`
+	RootRedirect                  string        `validate:"required"`
 }
 
 var CurrentConfig *Config
