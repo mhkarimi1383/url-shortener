@@ -1,0 +1,20 @@
+version: '3.3'
+
+services:
+  url-shortener:
+    image: ghcr.io/mhkarimi1383/url-shortener:main
+    ports:
+      - 8080:8080
+    environment:
+      - USH_ADD_REFERER_QUERY_PARAM=true
+      # use postgres://127.0.0.1:5432/url_shortener for postgres and root:@tcp(127.0.0.1:3306)/url_shortener?charset=utf8 for mysql
+      - USH_DATABASE_CONNECTION_STRING=/data/database.sqlite3
+      # Could be one of pgx, sqlite, mysql
+      - USH_DATABASE_ENGINE=sqlite
+      # Do not forget to change JWT Secret
+      - USH_JWT_SECRET=changeme
+      - USH_LISTEN_ADDRESS=0.0.0.0:8080
+      - USH_MIGRATE=true
+      - USH_RANDOM_GENERATOR_MAX=10000
+      - USH_ROOT_REDIRECt=/ui/
+      - USH_RUN_SERVER=true
