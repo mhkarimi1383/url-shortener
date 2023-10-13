@@ -68,9 +68,12 @@ func ListUrls(user databasemodels.User, limit, offset int) (*responseschemas.Lis
 		if err := database.Engine.Limit(limit, offset).Find(&urls); err != nil {
 			return nil, err
 		}
-		total, err := database.Engine.Count(new(databasemodels.Entity))
+		total, err := database.Engine.Count(new(databasemodels.Url))
 		if err != nil {
 			return nil, err
+		}
+		for _, u := range urls {
+			prepared.Result = append(prepared.Result, responseschemas.Url{Url: u})
 		}
 		prepared.MetaData.Count = total
 		return prepared, nil
@@ -78,11 +81,14 @@ func ListUrls(user databasemodels.User, limit, offset int) (*responseschemas.Lis
 	if err := database.Engine.Limit(limit, offset).Find(&urls, &databasemodels.Url{Creator: user}); err != nil {
 		return nil, err
 	}
-	total, err := database.Engine.Count(&databasemodels.Entity{
+	total, err := database.Engine.Count(&databasemodels.Url{
 		Creator: user,
 	})
 	if err != nil {
 		return nil, err
+	}
+	for _, u := range urls {
+		prepared.Result = append(prepared.Result, responseschemas.Url{Url: u})
 	}
 	prepared.MetaData.Count = total
 	return prepared, nil

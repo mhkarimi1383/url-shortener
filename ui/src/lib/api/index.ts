@@ -18,6 +18,16 @@ export interface loginInfo {
   Password: string;
 }
 
+export interface entity {
+  Id: number;
+  Name: string;
+  Description: string;
+  CreatedAt: string;
+  UpdatedAt: string;
+  Version: number;
+  Creator: userInfo;
+}
+
 export interface userInfo {
   Id: number;
   Admin: boolean;
@@ -50,14 +60,31 @@ export interface entityCreateRequest {
   Description: string;
 }
 
-export interface entity {
+export interface url {
   Id: number;
-  Name: string;
-  Description: string;
+  FullUrl: string;
+  ShortCode: string;
   CreatedAt: string;
   UpdatedAt: string;
+  ShortUrl: string;
   Version: number;
   Creator: userInfo;
+  Entity: entity;
+}
+
+export interface urlCreateRequest {
+  FullUrl: string;
+  Entity: number;
+}
+
+export interface urlCreateResponse {
+  ShortUrl: string;
+  ShortCode: string;
+}
+
+export interface listUrlsResponse {
+  MetaData: metaData;
+  Result: url[];
 }
 
 export interface listEntitiesResponse {
@@ -222,17 +249,52 @@ export async function listEntities(
   return retVal;
 }
 
-export async function listUrls(limit: number,
+export async function listUrls(
+  limit: number,
   offset: number,
-): Promise<listEntitiesResponse | errorResponse> {
-  let retVal = <listEntitiesResponse | errorResponse>{};
+): Promise<listUrlsResponse | errorResponse> {
+  let retVal = <listUrlsResponse | errorResponse>{};
   await client
-    .get<listEntitiesResponse>('/url/', {
+    .get<listUrlsResponse>('/url/', {
       params: {
         [limitQueryParam]: limit,
         [offsetQueryParam]: offset,
       },
     })
+    .then((resp: AxiosResponse) => {
+      retVal = resp.data;
+    })
+    .catch((err: AxiosError) => {
+      retVal =
+        (err.response?.data as errorResponse) ||
+        <errorResponse>{
+          message: unknownError,
+        };
+    });
+  return retVal;
+}
+
+export async function createUrl(url: urlCreateRequest): Promise<urlCreateResponse | errorResponse> {
+  let retVal = <urlCreateResponse | errorResponse>{};
+  await client
+    .post<urlCreateResponse>('/url/', url)
+    .then((resp: AxiosResponse) => {
+      retVal = resp.data;
+    })
+    .catch((err: AxiosError) => {
+      retVal =
+        (err.response?.data as errorResponse) ||
+        <errorResponse>{
+          message: unknownError,
+        };
+    });
+  return retVal;
+}
+
+export async function deleteUrl(Id: number): Promise<null | errorResponse> {
+  let retVal = <null | errorResponse>{};
+  await client
+    .post<null>('/url/' + Id.toString() + '/')
     .then((resp: AxiosResponse) => {
       retVal = resp.data;
     })

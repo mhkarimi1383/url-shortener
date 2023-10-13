@@ -89,16 +89,14 @@ func List(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	var resp responseschemas.ListUrls
-
 	list, err := controller.ListUrls(user, limit, offset)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range list.Result {
-		item.ShortUrl = c.Scheme() + "://" + c.Request().Host + "/" + item.ShortCode
+	for i, item := range list.Result {
+		list.Result[i].ShortUrl = c.Scheme() + "://" + c.Request().Host + "/" + item.ShortCode
 	}
 
-	return c.JSON(http.StatusOK, resp)
+	return c.JSON(http.StatusOK, list)
 }
