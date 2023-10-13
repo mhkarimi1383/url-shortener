@@ -54,3 +54,6 @@ coverage
 *.njsproj
 *.sln
 *.sw?
+
+.docs/*
+README.md

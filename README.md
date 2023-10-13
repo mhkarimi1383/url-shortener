@@ -14,7 +14,7 @@ Simple and minimalism URL Shortener
 - Ant Design Vue as UI Components
 - ...
 
-## ScreenShots
+## Screenshots
 
 <img src="./.docs/main-dark.png" width="45%"></img> <img src="./.docs/main-light.png" width="45%"></img> <img src="./.docs/url-dark.png" width="45%"></img> <img src="./.docs/url-light.png" width="45%"></img> <img src="./.docs/url-dark.png" width="45%"></img> <img src="./.docs/url-light.png" width="45%"></img>
 
