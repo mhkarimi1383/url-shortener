@@ -8,11 +8,7 @@
       </a-col>
     </a-row>
     <br />
-    <a-table
-      :columns="columns"
-      :pagination="{ total: resp?.MetaData.Count, current: offset, pageSize: limit }"
-      :data-source="resp?.Result"
-    >
+    <a-table :columns="columns" :pagination="false" :data-source="resp?.Result">
       <template #headerCell="{ column }">
         <template v-if="column.key === 'id'">
           <NumberOutlined />
@@ -36,6 +32,14 @@
         </template>
       </template>
     </a-table>
+    <br />
+    <a-pagination
+      style="float: right"
+      :total="resp?.MetaData.Count"
+      v-model:current="offset"
+      v-model:pageSize="limit"
+      @change="loadUserList"
+    ></a-pagination>
   </a-spin>
   <a-modal
     warning
@@ -142,16 +146,18 @@ const confirmChangePassword = () => {
   }
 };
 
-listUsers(limit.value, offset.value - 1)
-  .then((data) => {
-    resp.value = data as listUsersResponse;
-  })
-  .catch((data) => {
-    message.error((data as errorResponse).message);
-  })
-  .finally(() => {
-    loading.value = false;
-  });
+const loadUserList = function () {
+  listUsers(limit.value, offset.value - 1)
+    .then((data) => {
+      resp.value = data as listUsersResponse;
+    })
+    .catch((data) => {
+      message.error((data as errorResponse).message);
+    })
+    .finally(() => {
+      loading.value = false;
+    });
+};
 
 const columns = [
   {
@@ -189,4 +195,5 @@ const columns = [
     title: 'Actions',
   },
 ];
+loadUserList();
 </script>

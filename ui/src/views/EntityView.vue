@@ -3,8 +3,14 @@ import { ref, reactive } from 'vue';
 import { message } from 'ant-design-vue';
 import type { FormProps } from 'ant-design-vue';
 import { NumberOutlined } from '@ant-design/icons-vue';
-import { listEntities, createEntity, deleteEntity } from '@/lib/api';
-import type { listEntitiesResponse, errorResponse, entityCreateRequest } from '@/lib/api';
+import {
+  listEntities,
+  createEntity,
+  deleteEntity,
+  type errorResponse,
+  type entityCreateRequest,
+  type listEntitiesResponse,
+} from '@/lib/api';
 
 const limit = ref(5);
 const offset = ref(1);
@@ -145,11 +151,7 @@ loadEntities();
       </a-col>
     </a-row>
     <br />
-    <a-table
-      :columns="columns"
-      :pagination="{ total: resp?.MetaData.Count, current: offset, pageSize: limit }"
-      :data-source="resp?.Result"
-    >
+    <a-table :columns="columns" :pagination="false" :data-source="resp?.Result">
       <template #headerCell="{ column }">
         <template v-if="column.key === 'id'">
           <NumberOutlined />
@@ -173,5 +175,13 @@ loadEntities();
         </template>
       </template>
     </a-table>
+    <br />
+    <a-pagination
+      style="float: right"
+      :total="resp?.MetaData.Count"
+      v-model:current="offset"
+      v-model:pageSize="limit"
+      @change="loadEntities"
+    ></a-pagination>
   </a-spin>
 </template>
