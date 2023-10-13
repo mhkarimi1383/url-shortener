@@ -3,6 +3,7 @@
 set -ex
 
 cd ui
+npm ci
 npm run format
 npm run lint
 cd ..
