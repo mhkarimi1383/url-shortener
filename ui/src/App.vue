@@ -171,7 +171,7 @@ watch(
       sub-title="Simple and minimalism URL Shortener"
     >
       <template #extra>
-        <a-button href="https://github.com/mhkarimi1383/url-shortener">
+        <a-button target="_blank" href="https://github.com/mhkarimi1383/url-shortener">
           <template #icon>
             <GithubOutlined />
           </template>
