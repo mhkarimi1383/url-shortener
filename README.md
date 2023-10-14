@@ -16,7 +16,7 @@ Simple and minimalism URL Shortener
 
 ## Screenshots
 
-<img src="./.docs/main-dark.png" width="45%"></img> <img src="./.docs/main-light.png" width="45%"></img> <img src="./.docs/url-dark.png" width="45%"></img> <img src="./.docs/url-light.png" width="45%"></img> <img src="./.docs/url-dark.png" width="45%"></img> <img src="./.docs/url-light.png" width="45%"></img>
+<img src="./.docs/main-dark.png" width="45%"></img> <img src="./.docs/main-light.png" width="45%"></img> <img src="./.docs/url-dark.png" width="45%"></img> <img src="./.docs/url-light.png" width="45%"></img> <img src="./.docs/entity-light.png" width="45%"></img> <img src="./.docs/entity-dark.png" width="45%"></img>
 
 ## Running project
 
