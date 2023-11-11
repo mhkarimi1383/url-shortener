@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "ant-design-vue": "^4.0.2",
-    "axios": "^1.5.0",
+    "axios": "^1.6.0",
     "firacode": "^6.2.0",
     "vue": "^3.3.4",
     "vue-cookies": "^1.8.3",
