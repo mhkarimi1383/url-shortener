@@ -11,8 +11,8 @@ func init() {
 	os.Setenv("BASE_URL", "/ui")
 }
 
-//go:generate npm ci
-//go:generate npm run build
+//go:generate pnpm i --frozen-lockfile
+//go:generate pnpm build
 
 var (
 	//go:embed dist
