@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
+    "preinstall": "npx only-allow pnpm",
     "dev": "vite",
     "build": "run-p type-check build-only",
     "preview": "vite preview",
@@ -12,6 +13,7 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "@ant-design/icons-vue": "^7.0.1",
     "ant-design-vue": "^4.0.2",
     "axios": "^1.6.0",
     "firacode": "^6.2.0",

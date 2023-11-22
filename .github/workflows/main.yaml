@@ -2,9 +2,9 @@ name: Main
 
 on:
   push:
-    branches: ["main"]
+    branches: ['main']
   pull_request:
-    branches: ["main"]
+    branches: ['main']
 
 jobs:
   main:
@@ -22,11 +22,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: "Dependency Review"
+      - name: 'Dependency Review'
         if: github.event_name == 'pull_request'
         uses: actions/dependency-review-action@v3
 
-      - name: "Dependency Review"
+      - name: 'Dependency Review'
         if: github.event_name != 'pull_request'
         uses: actions/dependency-review-action@v3
         with:
@@ -37,7 +37,7 @@ jobs:
         if: github.event_name != 'pull_request'
         uses: sigstore/cosign-installer@v3.1.2
         with:
-          cosign-release: "v2.1.1"
+          cosign-release: 'v2.1.1'
 
       - name: Setup Docker buildx
         uses: docker/setup-buildx-action@v2.10.0
@@ -45,32 +45,39 @@ jobs:
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v2
         with:
-          languages: "go, javascript"
+          languages: 'go, javascript'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          run_install: false
+          package_json_file: ui/package.json
+          version: 8
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 18.x
-          cache-dependency-path: ui/package-lock.json
-          cache: "npm"
+          cache-dependency-path: ui/pnpm-lock.yaml
+          cache: 'pnpm'
 
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: "1.21"
+          go-version: '1.21'
 
       # We don't want to build the entire frondend, so we are using standalone npm ci
       - name: Install frontend packages (w/o go generate)
         working-directory: ./ui
         run: |
-          npm ci
+          pnpm i --frozen-lockfile
 
       - name: Install ESLint and Prettier
         working-directory: ./ui
         run: |
-          npm install eslint@8.10.0
-          npm install prettier@3.0.3
-          npm install @microsoft/eslint-formatter-sarif@2.1.7
+          pnpm -w install eslint@8.10.0
+          pnpm -w install prettier@3.0.3
+          pnpm -w install @microsoft/eslint-formatter-sarif@2.1.7
 
       - name: Run ESLint
         working-directory: ./ui
@@ -99,12 +106,12 @@ jobs:
       - name: Perform CodeQL Analysis (Go)
         uses: github/codeql-action/analyze@v2
         with:
-          category: "/language:go"
+          category: '/language:go'
 
       - name: Perform CodeQL Analysis (JavaScript)
         uses: github/codeql-action/analyze@v2
         with:
-          category: "/language:javascript"
+          category: '/language:javascript'
 
       - name: Run Codacy Analysis CLI (Metrics)
         uses: codacy/codacy-analysis-cli-action@v4.3.0
