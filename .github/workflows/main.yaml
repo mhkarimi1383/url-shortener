@@ -75,9 +75,9 @@ jobs:
       - name: Install ESLint and Prettier
         working-directory: ./ui
         run: |
-          pnpm install eslint@8.10.0
-          pnpm install prettier@3.0.3
-          pnpm install @microsoft/eslint-formatter-sarif@2.1.7
+          pnpm -w install eslint@8.10.0
+          pnpm -w install prettier@3.0.3
+          pnpm -w install @microsoft/eslint-formatter-sarif@2.1.7
 
       - name: Run ESLint
         working-directory: ./ui
