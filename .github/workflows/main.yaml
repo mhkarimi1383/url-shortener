@@ -46,6 +46,7 @@ jobs:
         uses: github/codeql-action/init@v2
         with:
           languages: 'go, javascript'
+          config-file: ./codeql-config.yml
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
