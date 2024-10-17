@@ -84,6 +84,11 @@ just run project with `--help` to see options and their env equivalent
   Default: true  
   Description: To run webserver or not
 
+- FLAG: `--base-uri`  
+  ENV: `USH_BASE_URI`  
+  Default: "/"  
+  Description: Base URI of project (not working on ui currently)
+
 ### Running Locally (for development)
 
 **Unix Users Only** use run script, it will install dependencies, format the code and run the project
