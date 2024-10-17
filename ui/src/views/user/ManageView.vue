@@ -6,6 +6,36 @@
           <a-statistic title="Number of Users" :value="resp?.MetaData.Count" />
         </a-card>
       </a-col>
+      <a-col :span="12">
+        <a-card style="width: 100%; height: 100%; display: flex" bodyStyle="align-self: center;">
+          <a-form
+            layout="inline"
+            :model="formState"
+            @finish="handleFinish"
+            @finishFailed="handleFinishFailed"
+          >
+            <a-form-item>
+              <a-input v-model:value="formState.Username" placeholder="Username"> </a-input>
+            </a-form-item>
+            <a-form-item>
+              <a-input-password v-model:value="formState.Password" placeholder="Password">
+              </a-input-password>
+            </a-form-item>
+            <a-form-item>
+              <a-checkbox v-model:checked="formState.Admin">Admin</a-checkbox>
+            </a-form-item>
+            <a-form-item>
+              <a-button
+                type="primary"
+                html-type="submit"
+                :disabled="formState.Username === '' || formState.Password === ''"
+              >
+                Create
+              </a-button>
+            </a-form-item>
+          </a-form>
+        </a-card>
+      </a-col>
     </a-row>
     <br />
     <a-table :columns="columns" :pagination="false" :data-source="resp?.Result">
@@ -84,8 +114,9 @@
 <script setup lang="ts">
 import { message } from 'ant-design-vue';
 import { computed, reactive, ref } from 'vue';
-import { adminChangeUserPassword, listUsers } from '@/lib/api';
-import type { errorResponse, listUsersResponse, userInfo } from '@/lib/api';
+import type { FormProps } from 'ant-design-vue';
+import { adminChangeUserPassword, listUsers, adminCreateUser } from '@/lib/api';
+import type { errorResponse, listUsersResponse, userInfo, createUserRequest } from '@/lib/api';
 import { ExclamationCircleOutlined, KeyOutlined, NumberOutlined } from '@ant-design/icons-vue';
 
 const limit = ref(5);
@@ -195,5 +226,35 @@ const columns = [
     title: 'Actions',
   },
 ];
+
+const formState = reactive<createUserRequest>({
+  Username: '',
+  Password: '',
+  Admin: false,
+});
+
+const handleFinish: FormProps['onFinish'] = (_) => {
+  loading.value = true;
+  adminCreateUser(formState)
+    .then((data) => {
+      if ((data as errorResponse).message) {
+        message.error((data as errorResponse).message);
+      }
+    })
+    .catch((data) => {
+      message.error((data as errorResponse).message);
+    })
+    .finally(() => {
+      loadUserList();
+      loading.value = false;
+      formState.Username = '';
+      formState.Password = '';
+      formState.Admin = false;
+    });
+};
+const handleFinishFailed: FormProps['onFinishFailed'] = (errors) => {
+  console.log(errors);
+};
+
 loadUserList();
 </script>

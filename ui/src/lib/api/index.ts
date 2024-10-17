@@ -92,6 +92,12 @@ export interface listEntitiesResponse {
   Result: entity[];
 }
 
+export interface createUserRequest {
+  Username: string;
+  Password: string;
+  Admin?: boolean;
+}
+
 export async function login(info: loginInfo): Promise<loginResponse | errorResponse> {
   let retVal = <loginResponse | errorResponse>{};
   await client
@@ -177,6 +183,23 @@ export async function listUsers(
         [offsetQueryParam]: offset,
       },
     })
+    .then((resp: AxiosResponse) => {
+      retVal = resp.data;
+    })
+    .catch((err: AxiosError) => {
+      retVal =
+        (err.response?.data as errorResponse) ||
+        <errorResponse>{
+          message: unknownError,
+        };
+    });
+  return retVal;
+}
+
+export async function adminCreateUser(user: createUserRequest): Promise<null | errorResponse> {
+  let retVal = <null | errorResponse>{};
+  await client
+    .post<null>('/user/', user)
     .then((resp: AxiosResponse) => {
       retVal = resp.data;
     })
