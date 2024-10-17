@@ -21,6 +21,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/brpaz/echozap"
@@ -81,6 +82,7 @@ func init() {
 	rootCmd.PersistentFlags().BoolVar(&cfg.AddRefererQueryParam, "add-referer-query-param", true, "Add 'referer' query param to redirect url or not")
 	rootCmd.PersistentFlags().IntVar(&cfg.RandomGeneratorMax, "random-generator-max", 10000, "Generator will use this to generate shortcodes (higher value = bigger shortcodes), at least 10000 should be set")
 	rootCmd.PersistentFlags().StringVarP(&cfg.RootRedirect, "root-redirect", "r", "/ui/", "Path/URL to redirect when someone comes to root url")
+	rootCmd.PersistentFlags().StringVar(&cfg.BaseURI, "base-uri", "/", "Base URL of the project")
 }
 
 func start(_ *cobra.Command, _ []string) {
@@ -106,6 +108,8 @@ func start(_ *cobra.Command, _ []string) {
 		}
 		log.Logger.Panic(err.Error())
 	}
+
+	cfg.BaseURI = strings.TrimSuffix(cfg.BaseURI, "/")
 
 	log.Logger.Info("Initializing database engine")
 	database.Init()
@@ -167,14 +171,16 @@ func start(_ *cobra.Command, _ []string) {
 	e.HidePort = true
 	e.HideBanner = true
 
-	e.Any("/:"+constrains.ShortCodeParamName, url.Redirect)
-	e.Any("/:"+constrains.ShortCodeParamName+"/", url.Redirect)
+	rootGroup := e.Group(cfg.BaseURI)
 
-	e.Any("/", func(c echo.Context) error {
+	rootGroup.Any("/:"+constrains.ShortCodeParamName, url.Redirect)
+	rootGroup.Any("/:"+constrains.ShortCodeParamName+"/", url.Redirect)
+
+	rootGroup.Any("/", func(c echo.Context) error {
 		return c.Redirect(http.StatusTemporaryRedirect, cfg.RootRedirect)
 	})
 
-	apiGroup := e.Group("/api")
+	apiGroup := rootGroup.Group("/api")
 	apiGroup.Use(addTrailingSlashMiddleware)
 
 	userGroup := apiGroup.Group("/user")
@@ -196,7 +202,7 @@ func start(_ *cobra.Command, _ []string) {
 	entityGroup.POST("/", entity.Create)
 	entityGroup.DELETE("/:"+constrains.IdParamName+"/", entity.Delete)
 
-	uiGroup := e.Group("/ui")
+	uiGroup := rootGroup.Group("/ui")
 	uiGroup.Any("", nil, addTrailingSlashMiddleware)
 	uiGroup.StaticFS("/", ui.MainFS)
 	uiGroup.StaticFS("/assets/", ui.AssetsFS)

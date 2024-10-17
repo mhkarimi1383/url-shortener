@@ -19,6 +19,7 @@ type Config struct {
 	AddRefererQueryParam          bool          `validate:""`
 	RandomGeneratorMax            int           `validate:"min=10000"`
 	RootRedirect                  string        `validate:"required"`
+	BaseURI                       string        `validate:""`
 }
 
 var CurrentConfig *Config
