@@ -43,7 +43,7 @@ jobs:
         uses: docker/setup-buildx-action@v2.10.0
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v2
+        uses: github/codeql-action/init@v3
         with:
           languages: 'go, javascript'
           config-file: ./codeql-config.yml
@@ -86,7 +86,7 @@ jobs:
         continue-on-error: true
 
       - name: Upload analysis results to GitHub
-        uses: github/codeql-action/upload-sarif@v2
+        uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: ui/eslint-results.sarif
           wait-for-processing: true
@@ -105,12 +105,12 @@ jobs:
         run: go build -x -o ./url-shortener .
 
       - name: Perform CodeQL Analysis (Go)
-        uses: github/codeql-action/analyze@v2
+        uses: github/codeql-action/analyze@v3
         with:
           category: '/language:go'
 
       - name: Perform CodeQL Analysis (JavaScript)
-        uses: github/codeql-action/analyze@v2
+        uses: github/codeql-action/analyze@v3
         with:
           category: '/language:javascript'
 
@@ -127,7 +127,7 @@ jobs:
           tool: metrics
 
       - name: Upload Codacy SARIF results file (Metrics)
-        uses: github/codeql-action/upload-sarif@v2
+        uses: github/codeql-action/upload-sarif@v3
         continue-on-error: true # Ignore 422 errors (when there is no result)
         with:
           sarif_file: metrics_results.sarif
@@ -145,7 +145,7 @@ jobs:
 
       - name: Upload Codacy SARIF results file (Issues)
         continue-on-error: true # Ignore 422 errors (when there is no result)
-        uses: github/codeql-action/upload-sarif@v2
+        uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: issues_results.sarif
 
@@ -162,7 +162,7 @@ jobs:
 
       - name: Upload Codacy SARIF results file (Duplication)
         continue-on-error: true # Ignore 422 errors (when there is no result)
-        uses: github/codeql-action/upload-sarif@v2
+        uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: duplication_results.sarif
 
