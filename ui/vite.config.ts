@@ -5,10 +5,10 @@ import { URL, fileURLToPath } from 'node:url';
 // https://vitejs.dev/config/
 export default defineConfig({
   base: "/ui",
-    plugins: [
+  plugins: [
     vue(),
   ],
-    resolve: {
+  resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
