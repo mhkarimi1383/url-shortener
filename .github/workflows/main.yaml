@@ -33,12 +33,6 @@ jobs:
           base-ref: ${{ github.event.before }}
           head-ref: ${{ github.event.after }}
 
-      - name: Install cosign
-        if: github.event_name != 'pull_request'
-        uses: sigstore/cosign-installer@v3.1.2
-        with:
-          cosign-release: 'v2.1.1'
-
       - name: Setup Docker buildx
         uses: docker/setup-buildx-action@v2.10.0
 
