@@ -75,6 +75,7 @@ export interface url {
 export interface urlCreateRequest {
   FullUrl: string;
   Entity: number;
+  ShortCode?: string;
 }
 
 export interface urlCreateResponse {

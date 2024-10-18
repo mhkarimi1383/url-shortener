@@ -39,12 +39,15 @@ func CreateUrl(r *requestschemas.CreateURL, creator databasemodels.User) (string
 	if _, err := database.Engine.Insert(&u); err != nil {
 		return "", err
 	}
-	shortant := shortcode.Generate(u.Id, u.CreatedAt)
-	u.ShortCode = shortant
+	if len(r.ShortCode) > 0 {
+		u.ShortCode = r.ShortCode
+	} else {
+		u.ShortCode = shortcode.Generate(u.Id, u.CreatedAt)
+	}
 	if _, err := database.Engine.Update(&u); err != nil {
 		return "", err
 	}
-	return shortant, nil
+	return u.ShortCode, nil
 }
 
 func DeleteUrl(id int64, user databasemodels.User) error {

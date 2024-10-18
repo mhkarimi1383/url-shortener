@@ -92,6 +92,10 @@ func init() {
 
 func start(_ *cobra.Command, _ []string) {
 	log.Logger.Info("Setting and Validating configuration parameters")
+
+	cfg.BaseURI = strings.TrimSuffix(cfg.BaseURI, "/")
+	cfg.RootRedirect = strings.ReplaceAll(cfg.RootRedirect, "/BASE_URI/", cfg.BaseURI+"/")
+
 	if err := configuration.SetConfig(&cfg); err != nil {
 		if vErrs, ok := err.(validator.ValidationErrors); ok {
 			for _, vErr := range vErrs {
@@ -113,10 +117,6 @@ func start(_ *cobra.Command, _ []string) {
 		}
 		log.Logger.Panic(err.Error())
 	}
-
-	cfg.BaseURI = strings.TrimSuffix(cfg.BaseURI, "/")
-	cfg.RootRedirect = strings.ReplaceAll(cfg.RootRedirect, "/BASE_URI/", cfg.BaseURI+"/")
-
 	log.Logger.Info("Initializing database engine")
 	database.Init()
 

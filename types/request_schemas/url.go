@@ -6,6 +6,7 @@ type CreateEntity struct {
 }
 
 type CreateURL struct {
-	FullUrl string `validate:"required,http_url"`
-	Entity  int64
+	FullUrl   string `validate:"required,http_url"`
+	Entity    int64
+	ShortCode string `validate:"min=0,max=10"`
 }

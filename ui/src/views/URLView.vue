@@ -179,6 +179,13 @@ loadListUrls();
               <a-input v-model:value="formState.FullUrl" placeholder="Long URL"> </a-input>
             </a-form-item>
             <a-form-item>
+              <a-input
+                v-model:value="formState.ShortCode"
+                placeholder="Custom Short Code (optional)"
+              >
+              </a-input>
+            </a-form-item>
+            <a-form-item>
               <a-button type="primary" html-type="submit" :disabled="formState.FullUrl === ''">
                 Create
               </a-button>
