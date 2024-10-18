@@ -45,13 +45,17 @@ func Create(c echo.Context) error {
 		return err
 	}
 
-	shortcode, err := controller.CreateUrl(r, user)
+	shortCode, err := controller.CreateUrl(r, user)
+	if err != nil {
+		return err
+	}
+	shortURL, err := url.JoinPath(c.Scheme()+"://"+c.Request().Host, configuration.CurrentConfig.BaseURI, "/"+shortCode)
 	if err != nil {
 		return err
 	}
 	return c.JSON(http.StatusCreated, responseschemas.Create{
-		ShortCode: shortcode,
-		ShortUrl:  c.Scheme() + "://" + c.Request().Host + "/" + shortcode,
+		ShortCode: shortCode,
+		ShortUrl:  shortURL,
 	})
 }
 
@@ -95,7 +99,11 @@ func List(c echo.Context) error {
 	}
 
 	for i, item := range list.Result {
-		list.Result[i].ShortUrl = c.Scheme() + "://" + c.Request().Host + "/" + item.ShortCode
+		shortURL, err := url.JoinPath(c.Scheme()+"://"+c.Request().Host, configuration.CurrentConfig.BaseURI, "/"+item.ShortCode)
+		if err != nil {
+			return err
+		}
+		list.Result[i].ShortUrl = shortURL
 	}
 
 	return c.JSON(http.StatusOK, list)

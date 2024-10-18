@@ -1,7 +1,7 @@
 import router from '@/router';
 import axios, { type AxiosError } from 'axios';
 
-const apiBaseURL = '/api';
+const apiBaseURL = '/BASE_URI/api';
 let userToken: undefined | string = undefined;
 
 const client = axios.create({

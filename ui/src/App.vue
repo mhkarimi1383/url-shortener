@@ -164,7 +164,7 @@ watch(
         margin-right: 0.25%;`"
       title="URL Shortener"
       :avatar="{
-        src: '/ui/logo.svg',
+        src: '/BASE_URI/ui/logo.svg',
         shape: 'square',
         style: currentTheme === 'dark' && 'filter: invert(100%);',
       }"

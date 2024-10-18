@@ -3,7 +3,7 @@ import HomeView from '../views/HomeView.vue';
 import { createRouter, createWebHistory } from 'vue-router';
 
 const router = createRouter({
-  history: createWebHistory('/ui'),
+  history: createWebHistory('/BASE_URI/ui'),
   routes: [
     {
       path: '/',

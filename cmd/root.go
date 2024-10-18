@@ -18,8 +18,13 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 package cmd
 
 import (
+	"bytes"
+	"io"
+	"mime"
 	"net/http"
+	neturl "net/url"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -81,7 +86,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&cfg.JWTSecret, "jwt-secret", "superdupersecret", "jwt secret to sign tokens with, strongly recommended to change")
 	rootCmd.PersistentFlags().BoolVar(&cfg.AddRefererQueryParam, "add-referer-query-param", true, "Add 'referer' query param to redirect url or not")
 	rootCmd.PersistentFlags().IntVar(&cfg.RandomGeneratorMax, "random-generator-max", 10000, "Generator will use this to generate shortcodes (higher value = bigger shortcodes), at least 10000 should be set")
-	rootCmd.PersistentFlags().StringVarP(&cfg.RootRedirect, "root-redirect", "r", "/ui/", "Path/URL to redirect when someone comes to root url")
+	rootCmd.PersistentFlags().StringVarP(&cfg.RootRedirect, "root-redirect", "r", "/BASE_URI/ui/", "Path/URL to redirect when someone comes to root url")
 	rootCmd.PersistentFlags().StringVar(&cfg.BaseURI, "base-uri", "/", "Base URL of the project")
 }
 
@@ -110,6 +115,7 @@ func start(_ *cobra.Command, _ []string) {
 	}
 
 	cfg.BaseURI = strings.TrimSuffix(cfg.BaseURI, "/")
+	cfg.RootRedirect = strings.ReplaceAll(cfg.RootRedirect, "/BASE_URI/", cfg.BaseURI+"/")
 
 	log.Logger.Info("Initializing database engine")
 	database.Init()
@@ -202,14 +208,31 @@ func start(_ *cobra.Command, _ []string) {
 	entityGroup.POST("/", entity.Create)
 	entityGroup.DELETE("/:"+constrains.IdParamName+"/", entity.Delete)
 
-	uiGroup := e.Group("/ui")
+	uiGroup := rootGroup.Group("/ui")
 	uiGroup.Any("", nil, addTrailingSlashMiddleware)
-	uiGroup.StaticFS("/", ui.MainFS)
-	uiGroup.StaticFS("/assets/", ui.AssetsFS)
-	uiGroup.FileFS("/*.html", "index.html", ui.MainFS)
-	uiGroup.FileFS("/logo.svg", "logo.svg", ui.MainFS)
-	rootGroup.FileFS("/favicon.ico", "favicon.ico", ui.MainFS)
-	e.FileFS("/ui/favicon.ico", "favicon.ico", ui.MainFS)
+	uiGroup.GET("/*", func(c echo.Context) error {
+		prefix := filepath.Join("/"+strings.TrimPrefix(cfg.BaseURI, "/"), "/ui/")
+		filePath := strings.TrimPrefix(strings.TrimPrefix(c.Request().URL.Path, prefix), "/")
+		file, err := ui.MainFS.Open(filePath)
+		if err != nil {
+			filePath = "index.html"
+			file, _ = ui.MainFS.Open(filePath)
+		}
+		defer file.Close()
+		buf := new(bytes.Buffer)
+		_, err = io.Copy(buf, file)
+		if err != nil {
+			return err
+		}
+		newURI, err := neturl.JoinPath("/BASE_URI/", "../"+cfg.BaseURI+"/")
+		if err != nil {
+			return err
+		}
+		println(newURI)
+		modifiedContent := strings.ReplaceAll(buf.String(), "/BASE_URI/", newURI)
+		fileParts := strings.Split(filePath, ".")
+		return c.Blob(200, mime.TypeByExtension("."+fileParts[len(fileParts)-1]), []byte(modifiedContent))
+	})
 
 	if configuration.CurrentConfig.RunServer {
 		log.Logger.Info("WebServer Started", zap.String("listen-address", configuration.CurrentConfig.ListenAddress))

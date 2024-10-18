@@ -11,10 +11,10 @@ const app = createApp(App);
 app.use(router);
 app.use(Antd);
 app.use(VueCookies, {
-  path: '/ui/',
   secure: true,
   expires: '20d',
   sameSite: 'Strict',
+  path: '/BASE_URI/ui/',
   domain: window.location.hostname,
 });
 
