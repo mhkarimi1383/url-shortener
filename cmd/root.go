@@ -228,7 +228,6 @@ func start(_ *cobra.Command, _ []string) {
 		if err != nil {
 			return err
 		}
-		println(newURI)
 		modifiedContent := strings.ReplaceAll(buf.String(), "/BASE_URI/", newURI)
 		fileParts := strings.Split(filePath, ".")
 		return c.Blob(200, mime.TypeByExtension("."+fileParts[len(fileParts)-1]), []byte(modifiedContent))
