@@ -26,6 +26,8 @@ export interface entity {
   UpdatedAt: string;
   Version: number;
   Creator: userInfo;
+  VisitCount: number;
+  LastVisitedAt?: string;
 }
 
 export interface userInfo {
@@ -70,6 +72,8 @@ export interface url {
   Version: number;
   Creator: userInfo;
   Entity: entity;
+  VisitCount: number;
+  LastVisitedAt?: string;
 }
 
 export interface urlCreateRequest {
@@ -318,7 +322,7 @@ export async function createUrl(url: urlCreateRequest): Promise<urlCreateRespons
 export async function deleteUrl(Id: number): Promise<null | errorResponse> {
   let retVal = <null | errorResponse>{};
   await client
-    .post<null>('/url/' + Id.toString() + '/')
+    .delete<null>('/url/' + Id.toString() + '/')
     .then((resp: AxiosResponse) => {
       retVal = resp.data;
     })

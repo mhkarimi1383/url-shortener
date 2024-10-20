@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"time"
 
 	"github.com/labstack/echo/v4"
 
@@ -23,6 +24,13 @@ func Redirect(c echo.Context) error {
 	if has, _ := database.Engine.Get(&u); !has {
 		return echo.ErrNotFound
 	}
+	now := time.Now()
+	u.VisitCount++
+	u.LastVisitedAt = &now
+	u.Entity.VisitCount++
+	u.Entity.LastVisitedAt = &now
+	database.Engine.ID(u.Id).Update(&u)
+	database.Engine.ID(u.Entity.Id).Update(&u.Entity)
 	target := u.FullUrl
 	if configuration.CurrentConfig.AddRefererQueryParam {
 		url, _ := url.Parse(target)

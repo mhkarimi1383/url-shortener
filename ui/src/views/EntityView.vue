@@ -1,7 +1,9 @@
 <script setup lang="ts">
+import dayjs from 'dayjs';
 import { ref, reactive } from 'vue';
 import { message } from 'ant-design-vue';
 import type { FormProps } from 'ant-design-vue';
+import relativeTime from 'dayjs/plugin/relativeTime';
 import { NumberOutlined } from '@ant-design/icons-vue';
 import {
   listEntities,
@@ -11,6 +13,8 @@ import {
   type entityCreateRequest,
   type listEntitiesResponse,
 } from '@/lib/api';
+
+dayjs.extend(relativeTime);
 
 const limit = ref(5);
 const offset = ref(1);
@@ -102,6 +106,16 @@ const columns = [
     dataIndex: 'Version',
   },
   {
+    key: 'visitCount',
+    title: 'VisitCount',
+    dataIndex: 'VisitCount',
+  },
+  {
+    key: 'lastVisitedAt',
+    title: 'LastVisitedAt',
+    dataIndex: 'LastVisitedAt',
+  },
+  {
     key: 'creator',
     title: 'Creator',
     dataIndex: ['Creator', 'Username'],
@@ -157,8 +171,11 @@ loadEntities();
           <NumberOutlined />
         </template>
       </template>
-      <template #bodyCell="{ column, record }">
-        <template v-if="column.key === 'actions'">
+      <template #bodyCell="{ column, record, text }">
+        <template v-if="['updatedAt', 'createdAt', 'lastVisitedAt'].includes(column.key)">
+          {{ (text && dayjs(text).toNow(false)) || 'NaN' }}
+        </template>
+        <template v-else-if="column.key === 'actions'">
           <a-popconfirm
             title="Are you sure delete this entity (It will delete every link that refers to this entity)?"
             ok-text="Yes"

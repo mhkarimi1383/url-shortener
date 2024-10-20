@@ -1,6 +1,8 @@
 package controller
 
 import (
+	"time"
+
 	"github.com/mhkarimi1383/url-shortener/internal/database"
 	databasemodels "github.com/mhkarimi1383/url-shortener/types/database_models"
 	requestschemas "github.com/mhkarimi1383/url-shortener/types/request_schemas"
@@ -36,15 +38,13 @@ func CreateUrl(r *requestschemas.CreateURL, creator databasemodels.User) (string
 		Creator: creator,
 		Entity:  entity,
 	}
-	if _, err := database.Engine.Insert(&u); err != nil {
-		return "", err
-	}
 	if len(r.ShortCode) > 0 {
 		u.ShortCode = r.ShortCode
 	} else {
-		u.ShortCode = shortcode.Generate(u.Id, u.CreatedAt)
+		u.ShortCode = shortcode.Generate(u.Id, time.Now())
+		println(u.ShortCode)
 	}
-	if _, err := database.Engine.Update(&u); err != nil {
+	if _, err := database.Engine.Insert(&u); err != nil {
 		return "", err
 	}
 	return u.ShortCode, nil
