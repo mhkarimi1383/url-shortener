@@ -1,6 +1,8 @@
 package database
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"reflect"
 	"strings"
 
@@ -8,7 +10,7 @@ import (
 	"xorm.io/xorm"
 	"xorm.io/xorm/migrate"
 
-	"github.com/mhkarimi1383/url-shortener/types/database_models"
+	databasemodels "github.com/mhkarimi1383/url-shortener/types/database_models"
 )
 
 // IMPORTANT: We do not support removal of fields in models.!
@@ -58,7 +60,9 @@ func hashModel(s any) string {
 		fieldList = append(fieldList, f)
 	}
 	slices.Sort(fieldList)
-	return strings.Join(fieldList, "__")
+	algorithm := md5.New()
+	algorithm.Write([]byte(t.Name() + ":" + strings.Join(fieldList, "__")))
+	return hex.EncodeToString(algorithm.Sum(nil))
 }
 
 func RunMigrations() error {
