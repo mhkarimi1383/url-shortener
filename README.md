@@ -87,7 +87,7 @@ just run project with `--help` to see options and their env equivalent
 - FLAG: `--base-uri`  
   ENV: `USH_BASE_URI`  
   Default: "/"  
-  Description: Base URI of project (not working on ui currently)
+  Description: Base URI of project
 
 ### Running Locally (for development)
 
@@ -106,4 +106,5 @@ simply run that with the options/envs as you want
 - [x] Add more deploy/build options
 - [ ] API Documentation (swaggo is buggy and generating errors with some datatypes)
 - [x] Vue3 Frontend
-- [ ] Webhook and Reporting Support
+- [ ] Webhook Support
+- [x] Basic Visit stat repoting
