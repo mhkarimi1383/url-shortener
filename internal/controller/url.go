@@ -90,18 +90,22 @@ func ListUrls(user databasemodels.User, limit, offset int) (*responseschemas.Lis
 	return prepared, nil
 }
 
-func ListEntities(limit, offset int) (*responseschemas.ListEntities, error) {
+func ListEntities(user databasemodels.User, limit, offset int) (*responseschemas.ListEntities, error) {
 	var entities []databasemodels.Entity
+	e := new(databasemodels.Entity)
+	if !user.Admin {
+		e.Creator = user
+	}
 	prepared := new(responseschemas.ListEntities)
-	if err := database.Engine.Limit(limit, offset).Find(&entities); err != nil {
+	if err := database.Engine.Limit(limit, offset).Find(&entities, e); err != nil {
 		return nil, err
 	}
 	prepared.Result = entities
-	total, err := database.Engine.Count(new(databasemodels.Entity))
+	total, err := database.Engine.Count(e)
 	if err != nil {
 		return nil, err
 	}
-	totalVisit, err := database.Engine.SumInt(new(databasemodels.Entity), "VisitCount")
+	totalVisit, err := database.Engine.SumInt(e, "VisitCount")
 	if err != nil {
 		return nil, err
 	}

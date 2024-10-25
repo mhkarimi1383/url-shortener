@@ -13,6 +13,8 @@ import (
 )
 
 func List(c echo.Context) error {
+	user := c.Get(constrains.UserInfoContextVar).(databasemodels.User)
+
 	limitStr := c.QueryParam(constrains.LimitQueryParamName)
 	if limitStr == "" {
 		limitStr = "10"
@@ -31,7 +33,7 @@ func List(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	list, err := controller.ListEntities(limit, offset)
+	list, err := controller.ListEntities(user, limit, offset)
 	if err != nil {
 		return err
 	}
