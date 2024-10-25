@@ -24,6 +24,7 @@ const resp = ref<listEntitiesResponse>({
   Result: [],
   MetaData: {
     Count: NaN,
+    TotalVisit: NaN,
   },
 });
 
@@ -133,34 +134,45 @@ loadEntities();
 <template>
   <a-spin :spinning="loading">
     <a-row>
-      <a-col :span="12">
-        <a-card>
-          <a-statistic title="Number of Entities" :value="resp?.MetaData.Count" />
+      <a-col :span="6">
+        <a-card title="Statistics" style="height: 100%">
+          <a-card-grid style="width: 50%"
+            ><a-statistic title="Number of Entities" :value="resp?.MetaData.Count"
+          /></a-card-grid>
+          <a-card-grid style="width: 50%"
+            ><a-statistic title="Total Visit Count" :value="resp?.MetaData.TotalVisit"
+          /></a-card-grid>
         </a-card>
       </a-col>
-      <a-col :span="12">
-        <a-card style="width: 100%; height: 100%; display: flex" bodyStyle="align-self: center;">
+      <a-col :span="18">
+        <a-card title="Create Entity">
           <a-form
             layout="inline"
             :model="formState"
             @finish="handleFinish"
             @finishFailed="handleFinishFailed"
           >
-            <a-form-item>
-              <a-input v-model:value="formState.Name" placeholder="Name"> </a-input>
-            </a-form-item>
-            <a-form-item>
-              <a-input v-model:value="formState.Description" placeholder="Description"> </a-input>
-            </a-form-item>
-            <a-form-item>
-              <a-button
-                type="primary"
-                html-type="submit"
-                :disabled="formState.Name === '' || formState.Description === ''"
-              >
-                Create
-              </a-button>
-            </a-form-item>
+            <a-card-grid :bordered="false" style="width: 45%">
+              <a-form-item>
+                <a-input v-model:value="formState.Name" placeholder="Name"> </a-input>
+              </a-form-item>
+            </a-card-grid>
+            <a-card-grid :bordered="false" style="width: 45%">
+              <a-form-item>
+                <a-input v-model:value="formState.Description" placeholder="Description"> </a-input>
+              </a-form-item>
+            </a-card-grid>
+            <a-card-grid :bordered="false" style="width: 10%">
+              <a-form-item>
+                <a-button
+                  type="primary"
+                  html-type="submit"
+                  :disabled="formState.Name === '' || formState.Description === ''"
+                >
+                  Create
+                </a-button>
+              </a-form-item>
+            </a-card-grid>
           </a-form>
         </a-card>
       </a-col>

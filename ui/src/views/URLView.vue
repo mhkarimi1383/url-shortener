@@ -27,6 +27,7 @@ const resp = ref<listUrlsResponse>({
   Result: [],
   MetaData: {
     Count: NaN,
+    TotalVisit: NaN,
   },
 });
 const createdModalView = ref(false);
@@ -167,44 +168,57 @@ loadListUrls();
 <template>
   <a-spin :spinning="loading">
     <a-row>
-      <a-col :span="12">
-        <a-card>
-          <a-statistic title="Number of URL(s)" :value="resp?.MetaData.Count" />
+      <a-col :span="6">
+        <a-card title="Statistics" style="height: 100%">
+          <a-card-grid style="width: 50%"
+            ><a-statistic title="Number of URL(s)" :value="resp?.MetaData.Count"
+          /></a-card-grid>
+          <a-card-grid style="width: 50%"
+            ><a-statistic title="Total Visit Count" :value="resp?.MetaData.TotalVisit"
+          /></a-card-grid>
         </a-card>
       </a-col>
-      <a-col :span="12">
-        <a-card style="width: 100%; height: 100%; display: flex" bodyStyle="align-self: center;">
+      <a-col :span="18">
+        <a-card title="Create URL">
           <a-form
             layout="inline"
             :model="formState"
             @finish="handleFinish"
             @finishFailed="handleFinishFailed"
           >
-            <a-form-item>
-              <a-select ref="select" v-model:value="formState.Entity" style="width: 20vh">
-                <a-select-option
-                  v-for="entity in entities?.Result"
-                  v-bind:key="entity.Id"
-                  :value="entity.Id"
-                  >{{ entity.Id }} - {{ entity.Name }}</a-select-option
+            <a-card-grid :bordered="false" style="width: 25%">
+              <a-form-item>
+                <a-select ref="select" v-model:value="formState.Entity">
+                  <a-select-option
+                    v-for="entity in entities?.Result"
+                    v-bind:key="entity.Id"
+                    :value="entity.Id"
+                    >{{ entity.Id }} - {{ entity.Name }}</a-select-option
+                  >
+                </a-select>
+              </a-form-item>
+            </a-card-grid>
+            <a-card-grid :bordered="false" style="width: 40%">
+              <a-form-item :rules="[{ required: true, message: 'Please enter full URL!' }]">
+                <a-input v-model:value="formState.FullUrl" placeholder="Long URL"> </a-input>
+              </a-form-item>
+            </a-card-grid>
+            <a-card-grid :bordered="false" style="width: 25%">
+              <a-form-item>
+                <a-input
+                  v-model:value="formState.ShortCode"
+                  placeholder="Custom Short Code (optional)"
                 >
-              </a-select>
-            </a-form-item>
-            <a-form-item>
-              <a-input v-model:value="formState.FullUrl" placeholder="Long URL"> </a-input>
-            </a-form-item>
-            <a-form-item>
-              <a-input
-                v-model:value="formState.ShortCode"
-                placeholder="Custom Short Code (optional)"
-              >
-              </a-input>
-            </a-form-item>
-            <a-form-item>
-              <a-button type="primary" html-type="submit" :disabled="formState.FullUrl === ''">
-                Create
-              </a-button>
-            </a-form-item>
+                </a-input>
+              </a-form-item>
+            </a-card-grid>
+            <a-card-grid style="width: 10%" :bordered="false">
+              <a-form-item>
+                <a-button type="primary" html-type="submit" :disabled="formState.FullUrl === ''">
+                  Create
+                </a-button>
+              </a-form-item>
+            </a-card-grid>
           </a-form>
           <a-modal v-model:open="createdModalView" title="Create Result">
             <a-result @ok="closeResultModal" status="success" title="Successfully Created URL">

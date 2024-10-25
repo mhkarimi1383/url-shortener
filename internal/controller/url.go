@@ -67,33 +67,26 @@ func DeleteUrl(id int64, user databasemodels.User) error {
 func ListUrls(user databasemodels.User, limit, offset int) (*responseschemas.ListUrls, error) {
 	var urls []databasemodels.Url
 	prepared := new(responseschemas.ListUrls)
-	if user.Admin {
-		if err := database.Engine.Limit(limit, offset).Find(&urls); err != nil {
-			return nil, err
-		}
-		total, err := database.Engine.Count(new(databasemodels.Url))
-		if err != nil {
-			return nil, err
-		}
-		for _, u := range urls {
-			prepared.Result = append(prepared.Result, responseschemas.Url{Url: u})
-		}
-		prepared.MetaData.Count = total
-		return prepared, nil
+	u := new(databasemodels.Url)
+	if !user.Admin {
+		u.Creator = user
 	}
-	if err := database.Engine.Limit(limit, offset).Find(&urls, &databasemodels.Url{Creator: user}); err != nil {
+	if err := database.Engine.Limit(limit, offset).Find(&urls, u); err != nil {
 		return nil, err
 	}
-	total, err := database.Engine.Count(&databasemodels.Url{
-		Creator: user,
-	})
+	total, err := database.Engine.Count(u)
 	if err != nil {
 		return nil, err
 	}
+	totalVisit, err := database.Engine.SumInt(u, "VisitCount")
+	if err != nil {
+		return nil, err
+	}
+	prepared.MetaData.Count = total
+	prepared.MetaData.TotalVisit = totalVisit
 	for _, u := range urls {
 		prepared.Result = append(prepared.Result, responseschemas.Url{Url: u})
 	}
-	prepared.MetaData.Count = total
 	return prepared, nil
 }
 
@@ -108,7 +101,12 @@ func ListEntities(limit, offset int) (*responseschemas.ListEntities, error) {
 	if err != nil {
 		return nil, err
 	}
+	totalVisit, err := database.Engine.SumInt(new(databasemodels.Entity), "VisitCount")
+	if err != nil {
+		return nil, err
+	}
 	prepared.MetaData.Count = total
+	prepared.MetaData.TotalVisit = totalVisit
 	return prepared, nil
 }
 

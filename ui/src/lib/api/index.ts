@@ -48,6 +48,10 @@ interface metaData {
   Count: number;
 }
 
+interface urlMetaData extends metaData {
+  TotalVisit: number;
+}
+
 export interface listUsersResponse {
   MetaData: metaData;
   Result: userInfo[];
@@ -88,12 +92,12 @@ export interface urlCreateResponse {
 }
 
 export interface listUrlsResponse {
-  MetaData: metaData;
+  MetaData: urlMetaData;
   Result: url[];
 }
 
 export interface listEntitiesResponse {
-  MetaData: metaData;
+  MetaData: urlMetaData;
   Result: entity[];
 }
 

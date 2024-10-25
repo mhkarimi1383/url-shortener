@@ -2,6 +2,11 @@ package responseschemas
 
 import databasemodels "github.com/mhkarimi1383/url-shortener/types/database_models"
 
+type UrlMetaData struct {
+	MetaData   `json:",inline"`
+	TotalVisit int64
+}
+
 type Create struct {
 	ShortUrl  string
 	ShortCode string
@@ -14,10 +19,10 @@ type Url struct {
 
 type ListUrls struct {
 	Result   []Url
-	MetaData MetaData
+	MetaData UrlMetaData
 }
 
 type ListEntities struct {
-	MetaData MetaData
+	MetaData UrlMetaData
 	Result   []databasemodels.Entity
 }
