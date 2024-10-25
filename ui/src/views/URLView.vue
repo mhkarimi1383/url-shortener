@@ -2,6 +2,7 @@
 import dayjs from 'dayjs';
 import { ref, reactive } from 'vue';
 import { message } from 'ant-design-vue';
+import { pageToOffset } from '@/lib/utils';
 import type { FormProps } from 'ant-design-vue';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { NumberOutlined } from '@ant-design/icons-vue';
@@ -20,7 +21,7 @@ import {
 dayjs.extend(relativeTime);
 
 const limit = ref(5);
-const offset = ref(1);
+const page = ref(1);
 const loading = ref<boolean>(true);
 const resp = ref<listUrlsResponse>({
   Result: [],
@@ -35,7 +36,7 @@ const closeResultModal = function () {
   createdModalView.value = false;
 };
 const loadListUrls = function () {
-  listUrls(limit.value, offset.value - 1)
+  listUrls(limit.value, pageToOffset(page.value, limit.value))
     .then((data) => {
       if ((data as errorResponse).message) {
         message.error((data as errorResponse).message);
@@ -259,7 +260,7 @@ loadListUrls();
     <a-pagination
       style="float: right"
       :total="resp?.MetaData.Count"
-      v-model:current="offset"
+      v-model:current="page"
       v-model:pageSize="limit"
       @change="loadListUrls"
     ></a-pagination>
