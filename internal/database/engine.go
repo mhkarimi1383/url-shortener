@@ -28,7 +28,7 @@ func Init() {
 		)
 	}
 
-	Engine.SetMapper(names.SameMapper{})
+	Engine.SetMapper(names.GonicMapper{})
 	Engine.SetMaxIdleConns(configuration.CurrentConfig.DatabaseMaxIdleConnections)
 	Engine.SetMaxOpenConns(configuration.CurrentConfig.DatabaseMaxOpenConnections)
 	Engine.SetConnMaxLifetime(configuration.CurrentConfig.DatabaseMaxConnectionLifetime * time.Second)

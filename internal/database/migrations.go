@@ -69,8 +69,8 @@ func RunMigrations() error {
 	m := migrate.New(
 		Engine,
 		&migrate.Options{
-			TableName:    "Migration",
-			IDColumnName: "Id",
+			TableName:    "migration",
+			IDColumnName: "id",
 		},
 		migrations,
 	)

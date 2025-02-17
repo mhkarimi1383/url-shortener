@@ -78,7 +78,7 @@ func ListUrls(user databasemodels.User, limit, offset int) (*responseschemas.Lis
 	if err != nil {
 		return nil, err
 	}
-	totalVisit, err := database.Engine.SumInt(u, "VisitCount")
+	totalVisit, err := database.Engine.SumInt(u, "visit_count")
 	if err != nil {
 		return nil, err
 	}
@@ -105,7 +105,7 @@ func ListEntities(user databasemodels.User, limit, offset int) (*responseschemas
 	if err != nil {
 		return nil, err
 	}
-	totalVisit, err := database.Engine.SumInt(e, "VisitCount")
+	totalVisit, err := database.Engine.SumInt(e, "visit_count")
 	if err != nil {
 		return nil, err
 	}
