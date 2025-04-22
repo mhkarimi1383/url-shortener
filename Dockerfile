@@ -1,5 +1,5 @@
-ARG GO_VERSION="1.22"
-ARG NODE_MAJOR="20"
+ARG GO_VERSION="1.24"
+ARG NODE_MAJOR="22"
 
 FROM golang:${GO_VERSION}-bookworm AS builder
 
