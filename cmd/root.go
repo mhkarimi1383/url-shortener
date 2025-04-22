@@ -242,6 +242,6 @@ func start(_ *cobra.Command, _ []string) {
 	}
 
 	commandGroup := apiGroup.Group("/command", checkUserAdmin)
-	entityGroup.DELETE("/remove-old-links", url.RemoveOlds)
+	commandGroup.DELETE("/remove-old-links", url.RemoveOldIds)
 
 }
