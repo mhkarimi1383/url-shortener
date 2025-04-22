@@ -25,6 +25,17 @@ func CreateEntity(r *requestschemas.CreateEntity, creator databasemodels.User) e
 }
 
 func CreateUrl(r *requestschemas.CreateURL, creator databasemodels.User) (string, error) {
+	if configuration.CurrentConfig.RejectRedirectUrls {
+		// Prevent from storing shorted urls
+		isRedirect, err := utils.IsRedirectingURL(r.FullUrl)
+		if err != nil {
+			return "", err
+		}
+		if isRedirect {
+			return "", echo.NewHTTPError(http.StatusBadRequest, "Shortened URLs are not allowed.")
+		}
+	}
+
 	entity := databasemodels.Entity{}
 	if r.Entity != 0 {
 		entity.Id = r.Entity
