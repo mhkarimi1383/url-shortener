@@ -2,12 +2,15 @@ package controller
 
 import (
 	"time"
-
+	"net/http"
+	
+	"github.com/labstack/echo/v4"
 	"github.com/mhkarimi1383/url-shortener/internal/database"
 	databasemodels "github.com/mhkarimi1383/url-shortener/types/database_models"
 	requestschemas "github.com/mhkarimi1383/url-shortener/types/request_schemas"
 	responseschemas "github.com/mhkarimi1383/url-shortener/types/response_schemas"
 	"github.com/mhkarimi1383/url-shortener/utils/shortcode"
+	"github.com/mhkarimi1383/url-shortener/types/configuration"
 )
 
 func CreateEntity(r *requestschemas.CreateEntity, creator databasemodels.User) error {
@@ -27,7 +30,7 @@ func CreateEntity(r *requestschemas.CreateEntity, creator databasemodels.User) e
 func CreateUrl(r *requestschemas.CreateURL, creator databasemodels.User) (string, error) {
 	if configuration.CurrentConfig.RejectRedirectUrls {
 		// Prevent from storing shorted urls
-		isRedirect, err := utils.IsRedirectingURL(r.FullUrl)
+		isRedirect, err := shortcode.IsRedirectingURL(r.FullUrl)
 		if err != nil {
 			return "", err
 		}
