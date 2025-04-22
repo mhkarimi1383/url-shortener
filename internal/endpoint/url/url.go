@@ -80,6 +80,29 @@ func Delete(c echo.Context) error {
 	return c.NoContent(http.StatusNoContent)
 }
 
+func RemoveOldIds(c echo.Context) error {
+	user := c.Get(constrains.UserInfoContextVar).(databasemodels.User)
+
+	// Define cutoff date (6 months ago)
+	cutoff := time.Now().AddDate(0, -1, 0)
+
+	// Prepare query conditions
+	session := database.Engine.Where("last_visited_at < ?", cutoff)
+
+	if !user.Admin {
+		// Non-admins can only delete their own URLs
+		session = session.And("creator_id = ?", user.Id)
+	}
+
+	// Delete matching records
+	_, err := session.Delete(&databasemodels.Url{})
+	if err != nil {
+		return err
+	}
+
+	return c.NoContent(http.StatusNoContent)
+}
+
 func List(c echo.Context) error {
 	user := c.Get(constrains.UserInfoContextVar).(databasemodels.User)
 

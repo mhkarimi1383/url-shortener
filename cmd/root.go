@@ -240,4 +240,8 @@ func start(_ *cobra.Command, _ []string) {
 			zap.String("listen-address", configuration.CurrentConfig.ListenAddress),
 		)
 	}
+
+	commandGroup := apiGroup.Group("/command", checkUserAdmin)
+	entityGroup.DELETE("/remove-old-links", url.RemoveOlds)
+
 }
