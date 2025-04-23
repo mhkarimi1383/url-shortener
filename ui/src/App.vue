@@ -145,8 +145,8 @@ watch(
     }"
   >
     <a-float-button
-      @click="changeTheme"
       :type="(currentTheme === 'dark' && 'primary') || 'default'"
+      @click="changeTheme"
     >
       <template #icon>
         <MoonIcon />
@@ -180,14 +180,14 @@ watch(
     </a-page-header>
     <a-layout>
       <a-layout-sider
+        v-model:collapsed="state.collapsed"
         :theme="currentTheme"
         breakpoint="sm"
-        v-model:collapsed="state.collapsed"
         collapsible
       >
         <a-menu
-          v-model:openKeys="state.openKeys"
-          v-model:selectedKeys="state.selectedKeys"
+          v-model:open-keys="state.openKeys"
+          v-model:selected-keys="state.selectedKeys"
           mode="vertical"
           :inline-collapsed="state.collapsed"
           :items="items"

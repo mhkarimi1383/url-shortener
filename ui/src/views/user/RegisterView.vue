@@ -1,5 +1,5 @@
 <template>
-  <a-form :model="formState" @finish="onFinish" @finishFailed="onFinishFailed">
+  <a-form :model="formState" @finish="onFinish" @finish-failed="onFinishFailed">
     <a-form-item
       label="Username"
       name="username"

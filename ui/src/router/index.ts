@@ -83,7 +83,7 @@ const publicRoutes = [
   'userRegister',
 ];
 
-router.beforeEach(async (to, _) => {
+router.beforeEach(async (to) => {
   if (!getToken() && !(to.name && publicRoutes.includes(to.name.toString()))) {
     return { name: 'userLogin' };
   }

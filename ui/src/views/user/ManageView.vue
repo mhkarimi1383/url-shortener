@@ -7,12 +7,12 @@
         </a-card>
       </a-col>
       <a-col :span="12">
-        <a-card style="width: 100%; height: 100%; display: flex" bodyStyle="align-self: center;">
+        <a-card style="width: 100%; height: 100%; display: flex" body-style="align-self: center;">
           <a-form
             layout="inline"
             :model="formState"
             @finish="handleFinish"
-            @finishFailed="handleFinishFailed"
+            @finish-failed="handleFinishFailed"
           >
             <a-form-item>
               <a-input v-model:value="formState.Username" placeholder="Username"> </a-input>
@@ -64,16 +64,16 @@
     </a-table>
     <br />
     <a-pagination
+      v-model:current="offset"
+      v-model:page-size="limit"
       style="float: right"
       :total="resp?.MetaData.Count"
-      v-model:current="offset"
-      v-model:pageSize="limit"
       @change="loadUserList"
     ></a-pagination>
   </a-spin>
   <a-modal
-    warning
     v-model:open="changePasswordModalVisible"
+    warning
     :confirm-loading="changePasswordModalLoading"
     @ok="confirmChangePassword"
   >
@@ -233,7 +233,7 @@ const formState = reactive<createUserRequest>({
   Admin: false,
 });
 
-const handleFinish: FormProps['onFinish'] = (_) => {
+const handleFinish: FormProps['onFinish'] = () => {
   loading.value = true;
   adminCreateUser(formState)
     .then((data) => {

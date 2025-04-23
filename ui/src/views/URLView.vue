@@ -62,7 +62,7 @@ const formState = reactive<urlCreateRequest>({
   FullUrl: '',
 });
 
-const handleFinish: FormProps['onFinish'] = (_) => {
+const handleFinish: FormProps['onFinish'] = () => {
   loading.value = true;
   createUrl(formState)
     .then((data) => {
@@ -184,14 +184,14 @@ loadListUrls();
             layout="inline"
             :model="formState"
             @finish="handleFinish"
-            @finishFailed="handleFinishFailed"
+            @finish-failed="handleFinishFailed"
           >
             <a-card-grid :bordered="false" style="width: 25%">
               <a-form-item>
                 <a-select ref="select" v-model:value="formState.Entity">
                   <a-select-option
                     v-for="entity in entities?.Result"
-                    v-bind:key="entity.Id"
+                    :key="entity.Id"
                     :value="entity.Id"
                     >{{ entity.Id }} - {{ entity.Name }}</a-select-option
                   >
@@ -221,7 +221,7 @@ loadListUrls();
             </a-card-grid>
           </a-form>
           <a-modal v-model:open="createdModalView" title="Create Result">
-            <a-result @ok="closeResultModal" status="success" title="Successfully Created URL">
+            <a-result status="success" title="Successfully Created URL" @ok="closeResultModal">
               <template #subTitle>
                 ShortURL:
                 <a :href="createResult?.ShortUrl" target="_blank">{{ createResult?.ShortUrl }}</a>
@@ -272,10 +272,10 @@ loadListUrls();
     </a-table>
     <br />
     <a-pagination
+      v-model:current="page"
+      v-model:page-size="limit"
       style="float: right"
       :total="resp?.MetaData.Count"
-      v-model:current="page"
-      v-model:pageSize="limit"
       @change="loadListUrls"
     ></a-pagination>
   </a-spin>

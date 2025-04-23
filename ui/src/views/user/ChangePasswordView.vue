@@ -19,7 +19,7 @@ const passwordsAreEqual = computed(() => {
   return changePasswordFormState.password === changePasswordFormState.repeatPassword;
 });
 
-const confirmChangePassword = (_: any) => {
+const confirmChangePassword = () => {
   changePasswordLoading.value = true;
   if (passwordsAreEqual.value) {
     changeUserPassword({

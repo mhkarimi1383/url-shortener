@@ -54,7 +54,7 @@ const formState = reactive<entityCreateRequest>({
   Description: '',
 });
 
-const handleFinish: FormProps['onFinish'] = (_) => {
+const handleFinish: FormProps['onFinish'] = () => {
   loading.value = true;
   createEntity(formState)
     .then((data) => {
@@ -150,7 +150,7 @@ loadEntities();
             layout="inline"
             :model="formState"
             @finish="handleFinish"
-            @finishFailed="handleFinishFailed"
+            @finish-failed="handleFinishFailed"
           >
             <a-card-grid :bordered="false" style="width: 45%">
               <a-form-item>
@@ -207,10 +207,10 @@ loadEntities();
     </a-table>
     <br />
     <a-pagination
+      v-model:current="page"
+      v-model:page-size="limit"
       style="float: right"
       :total="resp?.MetaData.Count"
-      v-model:current="page"
-      v-model:pageSize="limit"
       @change="loadEntities"
     ></a-pagination>
   </a-spin>
