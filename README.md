@@ -89,6 +89,11 @@ just run project with `--help` to see options and their env equivalent
   Default: "/"  
   Description: Base URI of project
 
+- FLAG: `--reject-redirect-urls`  
+  ENV: `USH_REJECT_REDIRECT_URLS`  
+  Default: false  
+  Description: Reject shortened (redirecting) URLs from being stored
+
 ### Running Locally (for development)
 
 **Unix Users Only** use run script, it will install dependencies, format the code and run the project
