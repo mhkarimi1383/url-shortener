@@ -4,6 +4,7 @@ import (
 	"math/rand"
 	"strconv"
 	"time"
+	"net/http"
 
 	"github.com/mhkarimi1383/url-shortener/types/configuration"
 )
@@ -35,4 +36,22 @@ func randInt(max int) int {
 
 func init() {
 	random = rand.New(rand.NewSource(time.Now().UTC().UnixNano()))
+}
+
+func IsRedirectingURL(rawURL string) (bool, error) {
+	client := http.Client{
+		Timeout: 5 * time.Second,
+		// Prevent auto-following redirects
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+	}
+	resp, err := client.Get(rawURL)
+	if err != nil {
+		return false, err
+	}
+	defer resp.Body.Close()
+
+	// Check for 3xx status codes
+	return resp.StatusCode >= 300 && resp.StatusCode < 400, nil
 }

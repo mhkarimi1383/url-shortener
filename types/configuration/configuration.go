@@ -20,6 +20,7 @@ type Config struct {
 	RandomGeneratorMax            int           `validate:"min=10000"`
 	RootRedirect                  string        `validate:"required"`
 	BaseURI                       string        `validate:""`
+	RejectRedirectUrls            bool          `validate:""`
 }
 
 var CurrentConfig *Config
