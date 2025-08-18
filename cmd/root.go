@@ -88,7 +88,8 @@ func init() {
 	rootCmd.PersistentFlags().IntVar(&cfg.RandomGeneratorMax, "random-generator-max", 10000, "Generator will use this to generate shortcodes (higher value = bigger shortcodes), at least 10000 should be set")
 	rootCmd.PersistentFlags().StringVarP(&cfg.RootRedirect, "root-redirect", "r", "/BASE_URI/ui/", "Path/URL to redirect when someone comes to root url")
 	rootCmd.PersistentFlags().StringVar(&cfg.BaseURI, "base-uri", "/", "Base URL of the project")
-	rootCmd.PersistentFlags().BoolVar(&cfg.RejectRedirectUrls, "reject-redirect-urls", false, "Reject shortened (redirecting) URLs from being stored")
+	rootCmd.PersistentFlags().BoolVar(&cfg.RejectRedirectUrls, "reject-redirect-urls", false, "Reject already shortened (redirecting) URLs from being stored")
+	rootCmd.PersistentFlags().StringSliceVar(&cfg.WhiteListHosts, "white-list-hosts", nil, "Whitelist for redirecting URLs rejection")
 }
 
 func start(_ *cobra.Command, _ []string) {

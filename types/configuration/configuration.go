@@ -21,6 +21,7 @@ type Config struct {
 	RootRedirect                  string        `validate:"required"`
 	BaseURI                       string        `validate:""`
 	RejectRedirectUrls            bool          `validate:""`
+	WhiteListHosts                []string      `validate:""`
 }
 
 var CurrentConfig *Config

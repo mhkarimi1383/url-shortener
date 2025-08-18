@@ -1,16 +1,18 @@
 package controller
 
 import (
-	"time"
 	"net/http"
-	
+	"net/url"
+	"slices"
+	"time"
+
 	"github.com/labstack/echo/v4"
 	"github.com/mhkarimi1383/url-shortener/internal/database"
+	"github.com/mhkarimi1383/url-shortener/types/configuration"
 	databasemodels "github.com/mhkarimi1383/url-shortener/types/database_models"
 	requestschemas "github.com/mhkarimi1383/url-shortener/types/request_schemas"
 	responseschemas "github.com/mhkarimi1383/url-shortener/types/response_schemas"
 	"github.com/mhkarimi1383/url-shortener/utils/shortcode"
-	"github.com/mhkarimi1383/url-shortener/types/configuration"
 )
 
 func CreateEntity(r *requestschemas.CreateEntity, creator databasemodels.User) error {
@@ -29,13 +31,15 @@ func CreateEntity(r *requestschemas.CreateEntity, creator databasemodels.User) e
 
 func CreateUrl(r *requestschemas.CreateURL, creator databasemodels.User) (string, error) {
 	if configuration.CurrentConfig.RejectRedirectUrls {
-		// Prevent from storing shorted urls
-		isRedirect, err := shortcode.IsRedirectingURL(r.FullUrl)
-		if err != nil {
-			return "", err
-		}
-		if isRedirect {
-			return "", echo.NewHTTPError(http.StatusBadRequest, "Shortened URLs are not allowed.")
+		parsed, _ := url.Parse(r.FullUrl) // URL Already validated
+		if !(slices.Contains(configuration.CurrentConfig.WhiteListHosts, parsed.Host)) {
+			isRedirect, err := shortcode.IsRedirectingURL(r.FullUrl)
+			if err != nil {
+				return "", echo.NewHTTPError(http.StatusInternalServerError, "Error while checking URL redirection: "+err.Error())
+			}
+			if isRedirect {
+				return "", echo.NewHTTPError(http.StatusBadRequest, "Shortened URLs are not allowed.")
+			}
 		}
 	}
 

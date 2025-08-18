@@ -2,9 +2,9 @@ package shortcode
 
 import (
 	"math/rand"
+	"net/http"
 	"strconv"
 	"time"
-	"net/http"
 
 	"github.com/mhkarimi1383/url-shortener/types/configuration"
 )
@@ -41,8 +41,7 @@ func init() {
 func IsRedirectingURL(rawURL string) (bool, error) {
 	client := http.Client{
 		Timeout: 5 * time.Second,
-		// Prevent auto-following redirects
-		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+		CheckRedirect: func(_ *http.Request, _ []*http.Request) error {
 			return http.ErrUseLastResponse
 		},
 	}
@@ -52,6 +51,5 @@ func IsRedirectingURL(rawURL string) (bool, error) {
 	}
 	defer resp.Body.Close()
 
-	// Check for 3xx status codes
 	return resp.StatusCode >= 300 && resp.StatusCode < 400, nil
 }
