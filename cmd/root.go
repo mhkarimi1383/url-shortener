@@ -19,6 +19,8 @@ package cmd
 
 import (
 	"bytes"
+	"crypto/md5"
+	"encoding/hex"
 	"io"
 	"mime"
 	"net/http"
@@ -212,12 +214,19 @@ func start(_ *cobra.Command, _ []string) {
 
 	uiGroup := rootGroup.Group("/ui")
 	uiGroup.Any("", nil, addTrailingSlashMiddleware)
-	uiCache := make(map[string]string)
+	uiCacheDir := filepath.Join(os.TempDir(), "url-shortener-ui-cache")
+	if err := os.MkdirAll(uiCacheDir, 0755); err != nil {
+		log.Logger.Panic("Failed to create UI cache directory", zap.Error(err))
+	}
 	uiGroup.GET("/*", func(c echo.Context) error {
 		prefix := filepath.Join("/"+strings.TrimPrefix(cfg.BaseURI, "/"), "/ui/")
 		filePath := strings.TrimPrefix(strings.TrimPrefix(c.Request().URL.Path, prefix), "/")
-		modifiedContent, ok := uiCache[filePath]
-		if !ok {
+		fileNameMd5 := md5.Sum([]byte(filePath))
+		fileNameHash := hex.EncodeToString(fileNameMd5[:])
+		cachedFilePath := filepath.Join(uiCacheDir, fileNameHash)
+
+		modifiedContent, err := os.ReadFile(cachedFilePath)
+		if err != nil {
 			file, err := ui.MainFS.Open(filePath)
 			if err != nil {
 				filePath = "index.html"
@@ -233,15 +242,17 @@ func start(_ *cobra.Command, _ []string) {
 			if err != nil {
 				return err
 			}
-			modifiedContent = strings.ReplaceAll(buf.String(), "/BASE_URI/", newURI)
-			uiCache[filePath] = modifiedContent
+			modifiedContent = []byte(strings.ReplaceAll(buf.String(), "/BASE_URI/", newURI))
+			if err := os.WriteFile(cachedFilePath, modifiedContent, 0644); err != nil {
+				return err
+			}
 		}
 		fileParts := strings.Split(filePath, ".")
 		mimeType := mime.TypeByExtension("." + fileParts[len(fileParts)-1])
 		if mimeType == "" {
 			mimeType = "text/html; charset=utf-8"
 		}
-		return c.Blob(200, mimeType, []byte(modifiedContent))
+		return c.Blob(200, mimeType, modifiedContent)
 	})
 
 	if configuration.CurrentConfig.RunServer {
