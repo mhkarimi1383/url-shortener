@@ -226,8 +226,20 @@ func start(_ *cobra.Command, _ []string) {
 		fileNameMd5 := md5.Sum([]byte(filePath))
 		fileNameHash := hex.EncodeToString(fileNameMd5[:])
 		cachedFilePath := filepath.Join(uiCacheDir, fileNameHash)
-		modifiedContent, err := os.ReadFile(cachedFilePath)
-		if err != nil {
+		fileParts := strings.Split(filePath, ".")
+		mimeType := mime.TypeByExtension("." + fileParts[len(fileParts)-1])
+		if mimeType == "" {
+			mimeType = "text/html; charset=utf-8"
+		}
+		if _, err := os.Stat(cachedFilePath); err == nil {
+			stream, err := os.Open(cachedFilePath)
+			if err != nil {
+				return err
+			}
+			defer stream.Close()
+			return c.Stream(200, mimeType, stream)
+		}
+		err := func() error {
 			cacheLock.Lock()
 			defer cacheLock.Unlock()
 			file, err := ui.MainFS.Open(filePath)
@@ -245,17 +257,21 @@ func start(_ *cobra.Command, _ []string) {
 			if err != nil {
 				return err
 			}
-			modifiedContent = []byte(strings.ReplaceAll(buf.String(), "/BASE_URI/", newURI))
+			modifiedContent := []byte(strings.ReplaceAll(buf.String(), "/BASE_URI/", newURI))
 			if err := os.WriteFile(cachedFilePath, modifiedContent, 0644); err != nil {
 				return err
 			}
+			return nil
+		}()
+		if err != nil {
+			return err
 		}
-		fileParts := strings.Split(filePath, ".")
-		mimeType := mime.TypeByExtension("." + fileParts[len(fileParts)-1])
-		if mimeType == "" {
-			mimeType = "text/html; charset=utf-8"
+		stream, err := os.Open(cachedFilePath)
+		if err != nil {
+			return err
 		}
-		return c.Blob(200, mimeType, modifiedContent)
+		defer stream.Close()
+		return c.Stream(200, mimeType, stream)
 	})
 
 	if configuration.CurrentConfig.RunServer {
