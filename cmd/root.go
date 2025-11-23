@@ -29,6 +29,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/brpaz/echozap"
@@ -218,15 +219,17 @@ func start(_ *cobra.Command, _ []string) {
 	if err := os.MkdirAll(uiCacheDir, 0755); err != nil {
 		log.Logger.Panic("Failed to create UI cache directory", zap.Error(err))
 	}
+	cacheLock := sync.Mutex{}
 	uiGroup.GET("/*", func(c echo.Context) error {
 		prefix := filepath.Join("/"+strings.TrimPrefix(cfg.BaseURI, "/"), "/ui/")
 		filePath := strings.TrimPrefix(strings.TrimPrefix(c.Request().URL.Path, prefix), "/")
 		fileNameMd5 := md5.Sum([]byte(filePath))
 		fileNameHash := hex.EncodeToString(fileNameMd5[:])
 		cachedFilePath := filepath.Join(uiCacheDir, fileNameHash)
-
 		modifiedContent, err := os.ReadFile(cachedFilePath)
 		if err != nil {
+			cacheLock.Lock()
+			defer cacheLock.Unlock()
 			file, err := ui.MainFS.Open(filePath)
 			if err != nil {
 				filePath = "index.html"
