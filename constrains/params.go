@@ -6,4 +6,5 @@ const (
 	ShortCodeParamName   = "ShortCode"
 	IdParamName          = "Id"
 	RefererQueryParam    = "referer"
+	CutoffQueryParamName = "Cutoff"
 )

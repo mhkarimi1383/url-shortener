@@ -212,27 +212,36 @@ func start(_ *cobra.Command, _ []string) {
 
 	uiGroup := rootGroup.Group("/ui")
 	uiGroup.Any("", nil, addTrailingSlashMiddleware)
+	uiCache := make(map[string]string)
 	uiGroup.GET("/*", func(c echo.Context) error {
 		prefix := filepath.Join("/"+strings.TrimPrefix(cfg.BaseURI, "/"), "/ui/")
 		filePath := strings.TrimPrefix(strings.TrimPrefix(c.Request().URL.Path, prefix), "/")
-		file, err := ui.MainFS.Open(filePath)
-		if err != nil {
-			filePath = "index.html"
-			file, _ = ui.MainFS.Open(filePath)
+		modifiedContent, ok := uiCache[filePath]
+		if !ok {
+			file, err := ui.MainFS.Open(filePath)
+			if err != nil {
+				filePath = "index.html"
+				file, _ = ui.MainFS.Open(filePath)
+			}
+			defer file.Close()
+			buf := new(bytes.Buffer)
+			_, err = io.Copy(buf, file)
+			if err != nil {
+				return err
+			}
+			newURI, err := neturl.JoinPath("/BASE_URI/", "../"+cfg.BaseURI+"/")
+			if err != nil {
+				return err
+			}
+			modifiedContent = strings.ReplaceAll(buf.String(), "/BASE_URI/", newURI)
+			uiCache[filePath] = modifiedContent
 		}
-		defer file.Close()
-		buf := new(bytes.Buffer)
-		_, err = io.Copy(buf, file)
-		if err != nil {
-			return err
-		}
-		newURI, err := neturl.JoinPath("/BASE_URI/", "../"+cfg.BaseURI+"/")
-		if err != nil {
-			return err
-		}
-		modifiedContent := strings.ReplaceAll(buf.String(), "/BASE_URI/", newURI)
 		fileParts := strings.Split(filePath, ".")
-		return c.Blob(200, mime.TypeByExtension("."+fileParts[len(fileParts)-1]), []byte(modifiedContent))
+		mimeType := mime.TypeByExtension("." + fileParts[len(fileParts)-1])
+		if mimeType == "" {
+			mimeType = "text/html; charset=utf-8"
+		}
+		return c.Blob(200, mimeType, []byte(modifiedContent))
 	})
 
 	if configuration.CurrentConfig.RunServer {
@@ -243,7 +252,6 @@ func start(_ *cobra.Command, _ []string) {
 		)
 	}
 
-	commandGroup := apiGroup.Group("/command", checkUserAdmin)
-	commandGroup.DELETE("/remove-old-links", url.RemoveOldIds)
-
+	commandGroup := apiGroup.Group("/command")
+	commandGroup.DELETE("/remove-old-links", url.RemoveUnusedUrls)
 }
