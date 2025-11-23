@@ -1,7 +1,7 @@
 ARG GO_VERSION="1.25"
-ARG NODE_MAJOR="22"
+ARG NODE_MAJOR="24"
 
-FROM golang:${GO_VERSION}-bookworm AS builder
+FROM golang:${GO_VERSION}-trixie AS builder
 
 ARG NODE_MAJOR
 
@@ -26,7 +26,7 @@ COPY . .
 RUN go generate ./...
 RUN go build -x -o /url-shortener .
 
-FROM gcr.io/distroless/static-debian12 AS runner
+FROM gcr.io/distroless/static-debian13 AS runner
 
 ENV USH_LISTEN_ADDRESS="0.0.0.0:8080"
 ENV USH_DATABASE_CONNECTION_STRING="/data/database.sqlite3"
