@@ -102,17 +102,60 @@ The visit buffer triggers an early background flush at 80% capacity. If PostgreS
 
 All replicas must use the same Redis database. Redirect cache generations and mutation locks are shared through Redis, so creates and deletes are serialized across replicas and stale cache writes are rejected. Redirects remain fail-open to PostgreSQL during a Redis outage; cache-affecting create/delete/cleanup operations return `503` until Redis coordination is available again.
 
-- `USH_REDIS_ADDRESS` (default: empty, for example `redis:6379`)
-- `USH_REDIS_USERNAME` (default: empty)
-- `USH_REDIS_PASSWORD` (default: empty)
-- `USH_REDIS_DATABASE` (default: `0`)
-- `USH_REDIS_TLS` (default: `false`)
-- `USH_REDIS_CACHE_TTL` (default: `24h`)
-- `USH_REDIS_DIAL_TIMEOUT` (default: `100ms`)
-- `USH_REDIS_READ_TIMEOUT` (default: `100ms`)
-- `USH_REDIS_WRITE_TIMEOUT` (default: `100ms`)
-- `USH_VISIT_FLUSH_INTERVAL` (default: `5s`)
-- `USH_VISIT_BUFFER_MAX_ENTRIES` (default: `100000`)
+- FLAG: `--redis-address`  
+  ENV: `USH_REDIS_ADDRESS`  
+  Default: empty  
+  Description: Redis host:port used for redirect caching; empty disables Redis (for example `redis:6379`)
+
+- FLAG: `--redis-username`  
+  ENV: `USH_REDIS_USERNAME`  
+  Default: empty  
+  Description: Redis username
+
+- FLAG: `--redis-password`  
+  ENV: `USH_REDIS_PASSWORD`  
+  Default: empty  
+  Description: Redis password
+
+- FLAG: `--redis-database`  
+  ENV: `USH_REDIS_DATABASE`  
+  Default: 0  
+  Description: Redis database number
+
+- FLAG: `--redis-tls`  
+  ENV: `USH_REDIS_TLS`  
+  Default: false  
+  Description: Use TLS for Redis
+
+- FLAG: `--redis-cache-ttl`  
+  ENV: `USH_REDIS_CACHE_TTL`  
+  Default: "24h0m0s"  
+  Description: TTL for cached redirects
+
+- FLAG: `--redis-dial-timeout`  
+  ENV: `USH_REDIS_DIAL_TIMEOUT`  
+  Default: "100ms"  
+  Description: Redis dial timeout
+
+- FLAG: `--redis-read-timeout`  
+  ENV: `USH_REDIS_READ_TIMEOUT`  
+  Default: "100ms"  
+  Description: Redis read timeout
+
+- FLAG: `--redis-write-timeout`  
+  ENV: `USH_REDIS_WRITE_TIMEOUT`  
+  Default: "100ms"  
+  Description: Redis write timeout
+
+- FLAG: `--visit-flush-interval`  
+  ENV: `USH_VISIT_FLUSH_INTERVAL`  
+  Default: "5s"  
+  Description: Interval for flushing aggregated visits
+
+- FLAG: `--visit-buffer-max-entries`  
+  ENV: `USH_VISIT_BUFFER_MAX_ENTRIES`  
+  Default: 100000  
+  Description: Maximum unique URLs buffered for visit statistics
 
 ### Running Locally (for development)
 
