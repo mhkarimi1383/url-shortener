@@ -1,6 +1,7 @@
 package entity
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -8,6 +9,8 @@ import (
 
 	"github.com/mhkarimi1383/url-shortener/constrains"
 	"github.com/mhkarimi1383/url-shortener/internal/controller"
+	"github.com/mhkarimi1383/url-shortener/internal/redirectcache"
+	"github.com/mhkarimi1383/url-shortener/internal/visits"
 	"github.com/mhkarimi1383/url-shortener/types/database_models"
 	"github.com/mhkarimi1383/url-shortener/types/request_schemas"
 )
@@ -65,7 +68,15 @@ func Delete(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	if err := controller.DeleteEntity(id); err != nil {
+	err = redirectcache.Default.Mutate(c.Request().Context(), func() error {
+		return visits.Default.SynchronizeCleanup(func() error {
+			return controller.DeleteEntity(id)
+		})
+	})
+	if err != nil {
+		if errors.Is(err, redirectcache.ErrMutationUnavailable) {
+			return echo.NewHTTPError(http.StatusServiceUnavailable, "Cache coordination is temporarily unavailable.").SetInternal(err)
+		}
 		return err
 	}
 	return c.NoContent(http.StatusNoContent)

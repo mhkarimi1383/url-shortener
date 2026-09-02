@@ -29,26 +29,32 @@ func CreateEntity(r *requestschemas.CreateEntity, creator databasemodels.User) e
 	return nil
 }
 
-func CreateUrl(r *requestschemas.CreateURL, creator databasemodels.User) (string, error) {
+func ValidateCreateUrl(r *requestschemas.CreateURL) error {
 	if configuration.CurrentConfig.RejectRedirectUrls {
 		parsed, _ := url.Parse(r.FullUrl) // URL Already validated
 		if !(slices.Contains(configuration.CurrentConfig.WhiteListHosts, parsed.Host)) {
 			isRedirect, err := shortcode.IsRedirectingURL(r.FullUrl)
 			if err != nil {
-				return "", echo.NewHTTPError(http.StatusInternalServerError, "Error while checking URL redirection: "+err.Error())
+				return echo.NewHTTPError(http.StatusInternalServerError, "Error while checking URL redirection: "+err.Error())
 			}
 			if isRedirect {
-				return "", echo.NewHTTPError(http.StatusBadRequest, "Shortened URLs are not allowed.")
+				return echo.NewHTTPError(http.StatusBadRequest, "Shortened URLs are not allowed.")
 			}
 		}
 	}
+	return nil
+}
 
+func CreateUrl(r *requestschemas.CreateURL, creator databasemodels.User) (string, error) {
 	entity := databasemodels.Entity{}
 	if r.Entity != 0 {
 		entity.Id = r.Entity
-		_, err := database.Engine.Get(&entity)
+		has, err := database.Engine.Get(&entity)
 		if err != nil {
 			return "", err
+		}
+		if !has {
+			return "", echo.NewHTTPError(http.StatusBadRequest, "Entity does not exist.")
 		}
 	}
 	u := databasemodels.Url{
@@ -60,7 +66,6 @@ func CreateUrl(r *requestschemas.CreateURL, creator databasemodels.User) (string
 		u.ShortCode = r.ShortCode
 	} else {
 		u.ShortCode = shortcode.Generate(u.Id, time.Now())
-		println(u.ShortCode)
 	}
 	if _, err := database.Engine.Insert(&u); err != nil {
 		return "", err
@@ -69,17 +74,21 @@ func CreateUrl(r *requestschemas.CreateURL, creator databasemodels.User) (string
 }
 
 func DeleteUrl(id int64, user databasemodels.User) error {
-	if user.Admin {
-		_, err := database.Engine.Delete(&databasemodels.Url{
-			Id: id,
-		})
+	u := databasemodels.Url{Id: id}
+	if !user.Admin {
+		u.Creator = user
+	}
+	has, err := database.Engine.Get(&u)
+	if err != nil {
 		return err
 	}
-	_, err := database.Engine.Delete(&databasemodels.Url{
-		Id:      id,
-		Creator: user,
-	})
-	return err
+	if !has {
+		return echo.ErrNotFound
+	}
+	if _, err := database.Engine.ID(u.Id).Delete(&databasemodels.Url{}); err != nil {
+		return err
+	}
+	return nil
 }
 
 func ListUrls(user databasemodels.User, limit, offset int) (*responseschemas.ListUrls, error) {
@@ -133,22 +142,39 @@ func ListEntities(user databasemodels.User, limit, offset int) (*responseschemas
 }
 
 func DeleteEntity(id int64) error {
+	session := database.Engine.NewSession()
+	defer session.Close()
+	if err := session.Begin(); err != nil {
+		return err
+	}
+
 	entity := databasemodels.Entity{
 		Id: id,
 	}
-	if _, err := database.Engine.Get(&entity); err != nil {
+	has, err := session.Get(&entity)
+	if err != nil {
+		_ = session.Rollback()
 		return err
 	}
+	if !has {
+		_ = session.Rollback()
+		return echo.ErrNotFound
+	}
 
-	if _, err := database.Engine.Delete(&databasemodels.Url{
+	if _, err := session.Delete(&databasemodels.Url{
 		Entity: entity,
 	}); err != nil {
+		_ = session.Rollback()
 		return err
 	}
 
-	if _, err := database.Engine.Delete(&databasemodels.Entity{
+	if _, err := session.Delete(&databasemodels.Entity{
 		Id: id,
 	}); err != nil {
+		_ = session.Rollback()
+		return err
+	}
+	if err := session.Commit(); err != nil {
 		return err
 	}
 	return nil

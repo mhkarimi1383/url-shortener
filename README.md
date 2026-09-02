@@ -94,6 +94,26 @@ just run project with `--help` to see options and their env equivalent
   Default: false  
   Description: Reject shortened (redirecting) URLs from being stored
 
+### Redirect cache and visit aggregation
+
+Redis is optional. When it is unavailable or `USH_REDIS_ADDRESS` is empty, redirect lookups fall back to the configured database. Visit statistics are always aggregated in memory and flushed by the web-server process in the background.
+
+The visit buffer triggers an early background flush at 80% capacity. If PostgreSQL remains unavailable and the buffer reaches its hard limit, new high-cardinality statistics are dropped and logged so redirect availability is preserved.
+
+All replicas must use the same Redis database. Redirect cache generations and mutation locks are shared through Redis, so creates and deletes are serialized across replicas and stale cache writes are rejected. Redirects remain fail-open to PostgreSQL during a Redis outage; cache-affecting create/delete/cleanup operations return `503` until Redis coordination is available again.
+
+- `USH_REDIS_ADDRESS` (default: empty, for example `redis:6379`)
+- `USH_REDIS_USERNAME` (default: empty)
+- `USH_REDIS_PASSWORD` (default: empty)
+- `USH_REDIS_DATABASE` (default: `0`)
+- `USH_REDIS_TLS` (default: `false`)
+- `USH_REDIS_CACHE_TTL` (default: `24h`)
+- `USH_REDIS_DIAL_TIMEOUT` (default: `100ms`)
+- `USH_REDIS_READ_TIMEOUT` (default: `100ms`)
+- `USH_REDIS_WRITE_TIMEOUT` (default: `100ms`)
+- `USH_VISIT_FLUSH_INTERVAL` (default: `5s`)
+- `USH_VISIT_BUFFER_MAX_ENTRIES` (default: `100000`)
+
 ### Running Locally (for development)
 
 **Unix Users Only** use run script, it will install dependencies, format the code and run the project

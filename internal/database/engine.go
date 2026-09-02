@@ -1,8 +1,6 @@
 package database
 
 import (
-	"time"
-
 	"go.uber.org/zap"
 	"xorm.io/xorm"
 	"xorm.io/xorm/names"
@@ -31,6 +29,6 @@ func Init() {
 	Engine.SetMapper(names.GonicMapper{})
 	Engine.SetMaxIdleConns(configuration.CurrentConfig.DatabaseMaxIdleConnections)
 	Engine.SetMaxOpenConns(configuration.CurrentConfig.DatabaseMaxOpenConnections)
-	Engine.SetConnMaxLifetime(configuration.CurrentConfig.DatabaseMaxConnectionLifetime * time.Second)
+	Engine.SetConnMaxLifetime(configuration.CurrentConfig.DatabaseMaxConnectionLifetime)
 	Engine.SetLogger(newZapLogger(log.Logger.Sugar()))
 }
