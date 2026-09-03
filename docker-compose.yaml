@@ -18,3 +18,14 @@ services:
       - USH_RANDOM_GENERATOR_MAX=10000
       - USH_ROOT_REDIRECt=/ui/
       - USH_RUN_SERVER=true
+      # Optional Redis redirect cache. Leave unset to read redirects from the database.
+      # - USH_REDIS_ADDRESS=redis:6379
+      # - USH_REDIS_PASSWORD=
+      # - USH_REDIS_DATABASE=0
+      # - USH_REDIS_CACHE_TTL=24h
+      # - USH_REDIS_DIAL_TIMEOUT=100ms
+      # - USH_REDIS_READ_TIMEOUT=100ms
+      # - USH_REDIS_WRITE_TIMEOUT=100ms
+      # Visit statistics are aggregated in this process and flushed in the background.
+      - USH_VISIT_FLUSH_INTERVAL=5s
+      - USH_VISIT_BUFFER_MAX_ENTRIES=100000

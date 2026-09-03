@@ -19,17 +19,21 @@ package cmd
 
 import (
 	"bytes"
+	"context"
 	"crypto/md5"
 	"encoding/hex"
+	"errors"
 	"io"
 	"mime"
 	"net/http"
 	neturl "net/url"
 	"os"
+	"os/signal"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/brpaz/echozap"
@@ -48,7 +52,9 @@ import (
 	"github.com/mhkarimi1383/url-shortener/internal/endpoint/user"
 	"github.com/mhkarimi1383/url-shortener/internal/flagutil"
 	"github.com/mhkarimi1383/url-shortener/internal/log"
+	"github.com/mhkarimi1383/url-shortener/internal/redirectcache"
 	ivalidator "github.com/mhkarimi1383/url-shortener/internal/validator"
+	"github.com/mhkarimi1383/url-shortener/internal/visits"
 	"github.com/mhkarimi1383/url-shortener/types/configuration"
 	databasemodels "github.com/mhkarimi1383/url-shortener/types/database_models"
 	"github.com/mhkarimi1383/url-shortener/ui"
@@ -93,6 +99,17 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&cfg.BaseURI, "base-uri", "/", "Base URL of the project")
 	rootCmd.PersistentFlags().BoolVar(&cfg.RejectRedirectUrls, "reject-redirect-urls", false, "Reject already shortened (redirecting) URLs from being stored")
 	rootCmd.PersistentFlags().StringSliceVar(&cfg.WhiteListHosts, "white-list-hosts", nil, "Whitelist for redirecting URLs rejection")
+	rootCmd.PersistentFlags().StringVar(&cfg.RedisAddress, "redis-address", "", "Redis host:port used for redirect caching; empty disables Redis")
+	rootCmd.PersistentFlags().StringVar(&cfg.RedisUsername, "redis-username", "", "Redis username")
+	rootCmd.PersistentFlags().StringVar(&cfg.RedisPassword, "redis-password", "", "Redis password")
+	rootCmd.PersistentFlags().IntVar(&cfg.RedisDatabase, "redis-database", 0, "Redis database number")
+	rootCmd.PersistentFlags().BoolVar(&cfg.RedisTLS, "redis-tls", false, "Use TLS for Redis")
+	rootCmd.PersistentFlags().DurationVar(&cfg.RedisCacheTTL, "redis-cache-ttl", 24*time.Hour, "TTL for cached redirects")
+	rootCmd.PersistentFlags().DurationVar(&cfg.RedisDialTimeout, "redis-dial-timeout", 100*time.Millisecond, "Redis dial timeout")
+	rootCmd.PersistentFlags().DurationVar(&cfg.RedisReadTimeout, "redis-read-timeout", 100*time.Millisecond, "Redis read timeout")
+	rootCmd.PersistentFlags().DurationVar(&cfg.RedisWriteTimeout, "redis-write-timeout", 100*time.Millisecond, "Redis write timeout")
+	rootCmd.PersistentFlags().DurationVar(&cfg.VisitFlushInterval, "visit-flush-interval", 5*time.Second, "Interval for flushing aggregated visits")
+	rootCmd.PersistentFlags().IntVar(&cfg.VisitBufferMaxEntries, "visit-buffer-max-entries", 100000, "Maximum unique URLs buffered for visit statistics")
 }
 
 func start(_ *cobra.Command, _ []string) {
@@ -124,10 +141,14 @@ func start(_ *cobra.Command, _ []string) {
 	}
 	log.Logger.Info("Initializing database engine")
 	database.Init()
+	redirectcache.Init(configuration.CurrentConfig)
+	visits.Init(configuration.CurrentConfig)
 
 	if configuration.CurrentConfig.Migrate {
 		log.Logger.Info("Running database migrations")
-		database.RunMigrations()
+		if err := database.RunMigrations(); err != nil {
+			log.Logger.Fatal("Database migration failed", zap.Error(err))
+		}
 	}
 
 	e := echo.New()
@@ -274,14 +295,53 @@ func start(_ *cobra.Command, _ []string) {
 		return c.Stream(200, mimeType, stream)
 	})
 
+	commandGroup := apiGroup.Group("/command", authMiddleware, checkUserExists)
+	commandGroup.DELETE("/remove-old-links", url.RemoveUnusedUrls)
+
 	if configuration.CurrentConfig.RunServer {
+		if err := runServer(e); err != nil {
+			log.Logger.Fatal("WebServer stopped unexpectedly", zap.Error(err))
+		}
+	}
+}
+
+func runServer(e *echo.Echo) error {
+	workerContext, stopWorker := context.WithCancel(context.Background())
+	workerDone := make(chan struct{})
+	go func() {
+		defer close(workerDone)
+		visits.Default.Run(workerContext)
+	}()
+
+	serverError := make(chan error, 1)
+	go func() {
 		log.Logger.Info("WebServer Started", zap.String("listen-address", configuration.CurrentConfig.ListenAddress))
-		log.Logger.Fatal(
-			e.Start(configuration.CurrentConfig.ListenAddress).Error(),
-			zap.String("listen-address", configuration.CurrentConfig.ListenAddress),
-		)
+		serverError <- e.Start(configuration.CurrentConfig.ListenAddress)
+	}()
+
+	signals := make(chan os.Signal, 1)
+	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
+	defer signal.Stop(signals)
+
+	var runError error
+	select {
+	case err := <-serverError:
+		if err != nil && !errors.Is(err, http.ErrServerClosed) {
+			runError = err
+		}
+	case received := <-signals:
+		log.Logger.Info("Shutting down", zap.String("signal", received.String()))
+		shutdownContext, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		if err := e.Shutdown(shutdownContext); err != nil {
+			log.Logger.Error("Failed to gracefully shut down web server", zap.Error(err))
+		}
+		cancel()
 	}
 
-	commandGroup := apiGroup.Group("/command")
-	commandGroup.DELETE("/remove-old-links", url.RemoveUnusedUrls)
+	stopWorker()
+	<-workerDone
+	if err := redirectcache.Default.Close(); err != nil {
+		log.Logger.Warn("Failed to close Redis", zap.Error(err))
+	}
+	return runError
 }

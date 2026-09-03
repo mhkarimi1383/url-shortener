@@ -29,7 +29,7 @@ func newZapLogger(logger *zap.SugaredLogger) *zapLogger {
 	return &zapLogger{
 		logger:  logger,
 		level:   lvl,
-		showSQL: true,
+		showSQL: false,
 	}
 }
 

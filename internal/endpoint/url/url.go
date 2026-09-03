@@ -1,6 +1,7 @@
 package url
 
 import (
+	"errors"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -11,6 +12,8 @@ import (
 	"github.com/mhkarimi1383/url-shortener/constrains"
 	"github.com/mhkarimi1383/url-shortener/internal/controller"
 	"github.com/mhkarimi1383/url-shortener/internal/database"
+	"github.com/mhkarimi1383/url-shortener/internal/redirectcache"
+	"github.com/mhkarimi1383/url-shortener/internal/visits"
 	"github.com/mhkarimi1383/url-shortener/types/configuration"
 	databasemodels "github.com/mhkarimi1383/url-shortener/types/database_models"
 	requestschemas "github.com/mhkarimi1383/url-shortener/types/request_schemas"
@@ -18,26 +21,42 @@ import (
 )
 
 func Redirect(c echo.Context) error {
-	u := databasemodels.Url{
-		ShortCode: c.Param(constrains.ShortCodeParamName),
+	shortCode := c.Param(constrains.ShortCodeParamName)
+	entry, found, err := redirectcache.Default.Resolve(c.Request().Context(), shortCode, func() (redirectcache.Entry, bool, error) {
+		u := databasemodels.Url{ShortCode: shortCode}
+		has, err := database.Engine.Get(&u)
+		if err != nil {
+			return redirectcache.Entry{}, false, err
+		}
+		if !has {
+			return redirectcache.Entry{}, false, nil
+		}
+		return redirectcache.Entry{
+			URLID:    u.Id,
+			EntityID: u.Entity.Id,
+			Target:   u.FullUrl,
+		}, true, nil
+	})
+	if err != nil {
+		return err
 	}
-	if has, _ := database.Engine.Get(&u); !has {
+	if !found {
 		return echo.ErrNotFound
 	}
-	now := time.Now()
-	u.VisitCount++
-	u.LastVisitedAt = &now
-	u.Entity.VisitCount++
-	u.Entity.LastVisitedAt = &now
-	database.Engine.ID(u.Id).Update(&u)
-	database.Engine.ID(u.Entity.Id).Update(&u.Entity)
-	target := u.FullUrl
+	visits.Default.Increment(entry.URLID, entry.EntityID, time.Now())
+	return redirect(c, entry.Target)
+}
+
+func redirect(c echo.Context, target string) error {
 	if configuration.CurrentConfig.AddRefererQueryParam {
-		url, _ := url.Parse(target)
-		q := url.Query()
+		parsed, err := url.Parse(target)
+		if err != nil {
+			return err
+		}
+		q := parsed.Query()
 		q.Add(constrains.RefererQueryParam, c.Scheme()+"://"+c.Request().Host+c.Request().URL.Path)
-		url.RawQuery = q.Encode()
-		target = url.String()
+		parsed.RawQuery = q.Encode()
+		target = parsed.String()
 	}
 	return c.Redirect(http.StatusTemporaryRedirect, target)
 }
@@ -52,10 +71,18 @@ func Create(c echo.Context) error {
 	if err := c.Validate(r); err != nil {
 		return err
 	}
-
-	shortCode, err := controller.CreateUrl(r, user)
-	if err != nil {
+	if err := controller.ValidateCreateUrl(r); err != nil {
 		return err
+	}
+
+	var shortCode string
+	err := redirectcache.Default.Mutate(c.Request().Context(), func() error {
+		var createErr error
+		shortCode, createErr = controller.CreateUrl(r, user)
+		return createErr
+	})
+	if err != nil {
+		return cacheMutationError(err)
 	}
 	shortURL, err := url.JoinPath(c.Scheme()+"://"+c.Request().Host, configuration.CurrentConfig.BaseURI, "/"+shortCode)
 	if err != nil {
@@ -74,8 +101,11 @@ func Delete(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	if err := controller.DeleteUrl(id, user); err != nil {
-		return err
+	err = redirectcache.Default.Mutate(c.Request().Context(), func() error {
+		return controller.DeleteUrl(id, user)
+	})
+	if err != nil {
+		return cacheMutationError(err)
 	}
 	return c.NoContent(http.StatusNoContent)
 }
@@ -92,18 +122,40 @@ func RemoveUnusedUrls(c echo.Context) error {
 		return err
 	}
 
-	session := database.Engine.Where("last_visited_at < ?", cutoff)
+	err = redirectcache.Default.Mutate(c.Request().Context(), func() error {
+		return visits.Default.SynchronizeCleanup(func() error {
+			session := database.Engine.Where("last_visited_at < ?", cutoff)
+			if !user.Admin {
+				session = session.And("creator_id = ?", user.Id)
+			}
 
-	if !user.Admin {
-		session = session.And("creator_id = ?", user.Id)
-	}
-
-	_, err = session.Delete(&databasemodels.Url{})
+			var expired []databasemodels.Url
+			if err := session.Cols("id").Find(&expired); err != nil {
+				return err
+			}
+			if len(expired) == 0 {
+				return nil
+			}
+			ids := make([]int64, 0, len(expired))
+			for _, item := range expired {
+				ids = append(ids, item.Id)
+			}
+			_, err := database.Engine.In("id", ids).Delete(&databasemodels.Url{})
+			return err
+		})
+	})
 	if err != nil {
-		return err
+		return echo.NewHTTPError(http.StatusServiceUnavailable, "Unable to safely remove old links.").SetInternal(err)
 	}
 
 	return c.NoContent(http.StatusNoContent)
+}
+
+func cacheMutationError(err error) error {
+	if errors.Is(err, redirectcache.ErrMutationUnavailable) {
+		return echo.NewHTTPError(http.StatusServiceUnavailable, "Cache coordination is temporarily unavailable.").SetInternal(err)
+	}
+	return err
 }
 
 func List(c echo.Context) error {

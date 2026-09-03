@@ -22,6 +22,17 @@ type Config struct {
 	BaseURI                       string        `validate:""`
 	RejectRedirectUrls            bool          `validate:""`
 	WhiteListHosts                []string      `validate:""`
+	RedisAddress                  string        `validate:"omitempty,hostname_port"`
+	RedisUsername                 string        `validate:""`
+	RedisPassword                 string        `validate:""`
+	RedisDatabase                 int           `validate:"min=0"`
+	RedisTLS                      bool          `validate:""`
+	RedisCacheTTL                 time.Duration `validate:"gt=0"`
+	RedisDialTimeout              time.Duration `validate:"gt=0"`
+	RedisReadTimeout              time.Duration `validate:"gt=0"`
+	RedisWriteTimeout             time.Duration `validate:"gt=0"`
+	VisitFlushInterval            time.Duration `validate:"gt=0"`
+	VisitBufferMaxEntries         int           `validate:"gt=0"`
 }
 
 var CurrentConfig *Config

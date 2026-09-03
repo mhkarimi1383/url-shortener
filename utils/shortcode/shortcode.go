@@ -9,19 +9,18 @@ import (
 	"github.com/mhkarimi1383/url-shortener/types/configuration"
 )
 
-var random *rand.Rand
-
 func Generate(id int64, timestamp time.Time) string {
 	i := timestamp.UTC().UnixNano() + id
-	random.Seed(i)
-	return randomString(id)
+	random := rand.New(rand.NewSource(i))
+	return randomString(id, random)
 }
 
-func randomString(id int64) string {
+func randomString(id int64, random *rand.Rand) string {
 	n, _ := strconv.ParseInt(
 		strconv.Itoa(
 			randInt(
 				configuration.CurrentConfig.RandomGeneratorMax,
+				random,
 			),
 		)+strconv.FormatInt(id, 10),
 		10,
@@ -30,12 +29,8 @@ func randomString(id int64) string {
 	return strconv.FormatInt(n, 36)
 }
 
-func randInt(max int) int {
+func randInt(max int, random *rand.Rand) int {
 	return random.Intn(max)
-}
-
-func init() {
-	random = rand.New(rand.NewSource(time.Now().UTC().UnixNano()))
 }
 
 func IsRedirectingURL(rawURL string) (bool, error) {
