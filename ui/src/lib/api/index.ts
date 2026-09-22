@@ -87,6 +87,7 @@ export interface urlCreateRequest {
 }
 
 export interface urlCreateResponse {
+  Id: number;
   ShortUrl: string;
   ShortCode: string;
 }

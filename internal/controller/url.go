@@ -45,16 +45,32 @@ func ValidateCreateUrl(r *requestschemas.CreateURL) error {
 	return nil
 }
 
-func CreateUrl(r *requestschemas.CreateURL, creator databasemodels.User) (string, error) {
+func ValidateUpdateUrl(r *requestschemas.UpdateURL) error {
+	if configuration.CurrentConfig.RejectRedirectUrls {
+		parsed, _ := url.Parse(r.FullUrl) // URL Already validated
+		if !(slices.Contains(configuration.CurrentConfig.WhiteListHosts, parsed.Host)) {
+			isRedirect, err := shortcode.IsRedirectingURL(r.FullUrl)
+			if err != nil {
+				return echo.NewHTTPError(http.StatusInternalServerError, "Error while checking URL redirection: "+err.Error())
+			}
+			if isRedirect {
+				return echo.NewHTTPError(http.StatusBadRequest, "Shortened URLs are not allowed.")
+			}
+		}
+	}
+	return nil
+}
+
+func CreateUrl(r *requestschemas.CreateURL, creator databasemodels.User) (databasemodels.Url, error) {
 	entity := databasemodels.Entity{}
 	if r.Entity != 0 {
 		entity.Id = r.Entity
 		has, err := database.Engine.Get(&entity)
 		if err != nil {
-			return "", err
+			return databasemodels.Url{}, err
 		}
 		if !has {
-			return "", echo.NewHTTPError(http.StatusBadRequest, "Entity does not exist.")
+			return databasemodels.Url{}, echo.NewHTTPError(http.StatusBadRequest, "Entity does not exist.")
 		}
 	}
 	u := databasemodels.Url{
@@ -68,9 +84,28 @@ func CreateUrl(r *requestschemas.CreateURL, creator databasemodels.User) (string
 		u.ShortCode = shortcode.Generate(u.Id, time.Now())
 	}
 	if _, err := database.Engine.Insert(&u); err != nil {
-		return "", err
+		return databasemodels.Url{}, err
 	}
-	return u.ShortCode, nil
+	return u, nil
+}
+
+func UpdateUrl(id int64, r *requestschemas.UpdateURL, user databasemodels.User) error {
+	condition := databasemodels.Url{Id: id}
+	if !user.Admin {
+		condition.Creator = user
+	}
+
+	affected, err := database.Engine.Table(new(databasemodels.Url)).NoVersionCheck().Incr("version").Cols("full_url").Update(
+		&databasemodels.Url{FullUrl: r.FullUrl},
+		&condition,
+	)
+	if err != nil {
+		return err
+	}
+	if affected == 0 {
+		return echo.ErrNotFound
+	}
+	return nil
 }
 
 func DeleteUrl(id int64, user databasemodels.User) error {
@@ -89,6 +124,21 @@ func DeleteUrl(id int64, user databasemodels.User) error {
 		return err
 	}
 	return nil
+}
+
+func GetUrl(id int64, user databasemodels.User) (*responseschemas.Url, error) {
+	u := databasemodels.Url{Id: id}
+	if !user.Admin {
+		u.Creator = user
+	}
+	has, err := database.Engine.Get(&u)
+	if err != nil {
+		return nil, err
+	}
+	if !has {
+		return nil, echo.ErrNotFound
+	}
+	return &responseschemas.Url{Url: u}, nil
 }
 
 func ListUrls(user databasemodels.User, limit, offset int) (*responseschemas.ListUrls, error) {

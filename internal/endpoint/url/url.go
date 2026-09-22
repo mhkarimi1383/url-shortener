@@ -75,23 +75,50 @@ func Create(c echo.Context) error {
 		return err
 	}
 
-	var shortCode string
+	var createdURL databasemodels.Url
 	err := redirectcache.Default.Mutate(c.Request().Context(), func() error {
 		var createErr error
-		shortCode, createErr = controller.CreateUrl(r, user)
+		createdURL, createErr = controller.CreateUrl(r, user)
 		return createErr
 	})
 	if err != nil {
 		return cacheMutationError(err)
 	}
-	shortURL, err := url.JoinPath(c.Scheme()+"://"+c.Request().Host, configuration.CurrentConfig.BaseURI, "/"+shortCode)
+	shortURL, err := url.JoinPath(c.Scheme()+"://"+c.Request().Host, configuration.CurrentConfig.BaseURI, "/"+createdURL.ShortCode)
 	if err != nil {
 		return err
 	}
-	return c.JSON(http.StatusCreated, responseschemas.Create{
-		ShortCode: shortCode,
-		ShortUrl:  shortURL,
+	return c.JSON(http.StatusCreated, responseschemas.Url{
+		Url:      createdURL,
+		ShortUrl: shortURL,
 	})
+}
+
+func Update(c echo.Context) error {
+	user := c.Get(constrains.UserInfoContextVar).(databasemodels.User)
+
+	id, err := strconv.ParseInt(c.Param(constrains.IdParamName), 10, 0)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	r := new(requestschemas.UpdateURL)
+	if err := c.Bind(r); err != nil {
+		return err
+	}
+	if err := c.Validate(r); err != nil {
+		return err
+	}
+	if err := controller.ValidateUpdateUrl(r); err != nil {
+		return err
+	}
+
+	err = redirectcache.Default.Mutate(c.Request().Context(), func() error {
+		return controller.UpdateUrl(id, r, user)
+	})
+	if err != nil {
+		return cacheMutationError(err)
+	}
+	return c.NoContent(http.StatusNoContent)
 }
 
 func Delete(c echo.Context) error {
@@ -108,6 +135,24 @@ func Delete(c echo.Context) error {
 		return cacheMutationError(err)
 	}
 	return c.NoContent(http.StatusNoContent)
+}
+
+func Get(c echo.Context) error {
+	user := c.Get(constrains.UserInfoContextVar).(databasemodels.User)
+
+	id, err := strconv.ParseInt(c.Param(constrains.IdParamName), 10, 0)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	result, err := controller.GetUrl(id, user)
+	if err != nil {
+		return err
+	}
+	result.ShortUrl, err = url.JoinPath(c.Scheme()+"://"+c.Request().Host, configuration.CurrentConfig.BaseURI, "/"+result.ShortCode)
+	if err != nil {
+		return err
+	}
+	return c.JSON(http.StatusOK, result)
 }
 
 func RemoveUnusedUrls(c echo.Context) error {
