@@ -28,7 +28,7 @@ type Entity struct {
 
 type Url struct {
 	Id            int64
-	FullUrl       string     `xorm:"not null index"`
+	FullUrl       string     `xorm:"text not null"`
 	ShortCode     string     `xorm:"not null unique index"`
 	CreatedAt     time.Time  `xorm:"created"`
 	UpdatedAt     time.Time  `xorm:"updated"`
