@@ -209,6 +209,53 @@ func TestGetEnforcesOwnershipAndExistence(t *testing.T) {
 	requireHTTPErrorCode(t, err, http.StatusBadRequest)
 }
 
+func TestURLLengthValidation(t *testing.T) {
+	for _, length := range []int{256, 8192, 8193} {
+		t.Run(fmt.Sprint(length), func(t *testing.T) {
+			e, engine, owner, _, _ := setupURLTest(t)
+			prefix := "https://example.com/"
+			target := prefix + strings.Repeat("a", length-len(prefix))
+			body := fmt.Sprintf(`{"FullUrl":%q,"ShortCode":"length"}`, target)
+
+			recorder, err := createURLRequest(e, owner, body)
+			if length > 8192 {
+				requireHTTPErrorCode(t, err, http.StatusBadRequest)
+				count, err := engine.Count(new(databasemodels.Url))
+				if err != nil || count != 0 {
+					t.Fatalf("rejected create persisted a URL: count=%d, err=%v", count, err)
+				}
+			} else {
+				if err != nil || recorder.Code != http.StatusCreated {
+					t.Fatalf("create status=%d, err=%v", recorder.Code, err)
+				}
+				var response responseschemas.Url
+				if err := json.Unmarshal(recorder.Body.Bytes(), &response); err != nil {
+					t.Fatal(err)
+				}
+				if getURL(t, engine, response.Id).FullUrl != target {
+					t.Fatal("created URL was truncated")
+				}
+			}
+
+			stored := insertURL(t, engine, owner, databasemodels.Entity{}, "update")
+			recorder, err = updateURLRequest(e, owner, fmt.Sprint(stored.Id), body)
+			if length > 8192 {
+				requireHTTPErrorCode(t, err, http.StatusBadRequest)
+				if getURL(t, engine, stored.Id).FullUrl != stored.FullUrl {
+					t.Fatal("rejected update changed the URL")
+				}
+			} else {
+				if err != nil || recorder.Code != http.StatusNoContent {
+					t.Fatalf("update status=%d, err=%v", recorder.Code, err)
+				}
+				if getURL(t, engine, stored.Id).FullUrl != target {
+					t.Fatal("updated URL was truncated")
+				}
+			}
+		})
+	}
+}
+
 func setupURLTest(t *testing.T) (*echo.Echo, *xorm.Engine, databasemodels.User, databasemodels.User, databasemodels.User) {
 	t.Helper()
 
